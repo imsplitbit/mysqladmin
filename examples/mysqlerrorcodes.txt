@@ -1,0 +1,5 @@
+Documenting the error codes I come across that I might later want to capture and act upon.
+
+1049 Unknown database
+  Proposed solution: Following configuration constraints, i.e. crashIfExists...
+                     create if missing.
