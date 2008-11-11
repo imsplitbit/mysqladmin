@@ -76,6 +76,8 @@ module Mysqladmin
         if args[:crashIfExists] == true
           raise NameError, "The connection named '#{args[:connectionName]}' exists"
         elsif args[:overwriteIfExists] == true
+          # Flush out the overwriteIfExists so that it doesn't carry over to other methods
+          args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
           close(args)
           connect(args)
         else
@@ -105,7 +107,9 @@ module Mysqladmin
         if args[:crashIfExists] == true
           raise NameError, "The pool name '#{args[:poolName]}' exists"
         elsif args[:overwriteIfExists] == true
-          closePool(args[:poolName])
+          # Flush overwriteIfExists so it doesn't filter down to other method calls
+          args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+          closePool(args)
           @@connectionPools[args[:poolName]] = []
           true
         else
@@ -139,6 +143,8 @@ module Mysqladmin
         if args[:crashIfExists] == true
           raise NameError, "The connection #{args[:connectionName]} exists in #{args[:poolName]}"
         elsif args[:overwriteIfExists] == true
+          # Flush overwriteIfExists so it doesn't filter down to other method calls
+          args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
           close(args[:connectionName])
           @@connectionPools[args[:poolName]] << args[:connectionName]
           true
