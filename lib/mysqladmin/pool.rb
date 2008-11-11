@@ -78,12 +78,16 @@ module Mysqladmin
         elsif args[:overwriteIfExists] == true
           # Flush out the overwriteIfExists so that it doesn't carry over to other methods
           args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+          args.delete(:crashIfExists) if args.has_key?(:crashIfExists)
           close(args)
           connect(args)
         else
           false
         end
       else
+        # Flush out the overwriteIfExists so that it doesn't carry over to other methods
+        args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+        args.delete(:crashIfExists) if args.has_key?(:crashIfExists)
         connect(args)
         addToPool(args)
       end
@@ -109,6 +113,7 @@ module Mysqladmin
         elsif args[:overwriteIfExists] == true
           # Flush overwriteIfExists so it doesn't filter down to other method calls
           args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+          args.delete(:crashIfExists) if args.has_key?(:crashIfExists)
           closePool(args)
           @@connectionPools[args[:poolName]] = []
           true
@@ -145,6 +150,7 @@ module Mysqladmin
         elsif args[:overwriteIfExists] == true
           # Flush overwriteIfExists so it doesn't filter down to other method calls
           args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+          args.delete(:crashIfExists) if args.has_key?(:crashIfExists)
           close(args[:connectionName])
           @@connectionPools[args[:poolName]] << args[:connectionName]
           true
