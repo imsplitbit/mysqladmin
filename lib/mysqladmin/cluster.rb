@@ -13,8 +13,6 @@ module Mysqladmin
     #       :mgmtServer => IP or hostname of the management server
     #     }
     def initialize(args = {})
-      req(:required => [:mgmtServer],
-          :argsObject => args)
       @mgmtServer = args[:mgmtServer] || "localhost"
       
     end
