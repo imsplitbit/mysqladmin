@@ -26,6 +26,7 @@ lib/mysqladmin/user.rb
 lib/mysqladmin/system.rb
 lib/mysqladmin/serialize.rb
 lib/mysqladmin/files.rb
+lib/mysqladmin/cluster.rb
 script/console
 script/destroy
 script/generate
