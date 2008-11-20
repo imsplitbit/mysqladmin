@@ -200,7 +200,7 @@ module Mysqladmin
           if grant[/^GRANT\ .+\ ON/].upcase.include?("ALL PRIVILEGES")
             privileges << "ALL PRIVILEGES"
           else
-            privs = grant[/^GRANT\ .+\ ON/].upcase.split
+            privs = grant[/^GRANT\ .+\ ON/i].upcase.sub("GRANT ", "").sub(" ON", "").split(",")
             privs.each do |priv|
               unless priv == "GRANT" || priv == "ON"
                 if priv[/^.*[\W|\s|\d]+.*$/]
