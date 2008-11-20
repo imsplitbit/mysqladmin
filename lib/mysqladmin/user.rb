@@ -202,9 +202,6 @@ module Mysqladmin
           else
             privs = grant[/^GRANT\ .+\ ON/i].upcase.sub("GRANT ", "").sub(" ON", "").split(",")
             privs.each do |priv|
-              if priv[/^.*[\W|\d]+.*$/]
-                priv = priv.gsub!(/\W|\d/, "")
-              end
               privileges << priv
             end
           end
