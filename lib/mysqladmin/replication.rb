@@ -8,6 +8,8 @@ module Mysqladmin
         @master = args[:master] || nil
         @slave = args[:slave] || nil
         @sbmLimit = args[:sbmLimit] || 600
+        req(:required => [:master, :slave, :sbmLimit],
+            :argsObject => args)
       end
   
       def repStatusHost(args={})
