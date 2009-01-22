@@ -17,6 +17,7 @@ require "mysqladmin/logger"
 require "mysqladmin/serialize"
 require "mysqladmin/files"
 require "mysqladmin/cluster"
+require "threadpool"
 
 module Mysqladmin
   Mysqladmin::Pool.create

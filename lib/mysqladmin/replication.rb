@@ -4,21 +4,28 @@ module Mysqladmin
     include Mysqladmin::Serialize
     
     class Status
-      def initialize(args = {})
-        @master = args[:master] || nil
-        @slave = args[:slave] || nil
+      attr_accessor :replStatus
+      # Valid arguments:
+      #       {
+      #         :connectionName => The slave server in the replication pair,
+      #         :sbmLimit => The number of seconds behind the master the slave can be and still be considered "usably in sync"
+      #       }
+      def initialize(args={})
+        @connectionName = args[:slave] || nil
         @sbmLimit = args[:sbmLimit] || 600
-        req(:required => [:master, :slave, :sbmLimit],
-            :argsObject => args)
+        @replStatus = {}
       end
-  
+      
+      # Valid arguments:
+      #       {
+      #         :connectionName => The slave server in the replication pair
+      #       }
       def repStatusHost(args={})
-        @master = args[:master] unless @master
-        @slave = args[:slave] unless @slave
-        req(:required => [:master, :slave],
+        @connectionName = args[:connectionName] unless @connectionName
+        req(:required => [:connectionName],
             :argsObject => args)
         args.delete(:sql) if args.has_key?(:sql)
-        dbh = Mysqladmin::Exec.new(:connectionName => @slave, :sql => "SHOW SLAVE STATUS")
+        dbh = Mysqladmin::Exec.new(:connectionName => @connectionName, :sql => "SHOW SLAVE STATUS")
         dbh.go
         res = dbh.fetch_hash
         sbm = res["Seconds_Behind_Master"].to_i
@@ -32,28 +39,20 @@ module Mysqladmin
           return true
         end
       end
-  
+      
+      # Valid arguments:
+      #       {
+      #         :poolName => the pool of servers on which you wish to gather replication status
+      #       }
       def repStatusPool(args={})
-        
-      end
-    end
-    
-    class Sync
-      def initialize(args={})
-        @master = args[:master] || nil
-        @slave = args[:slave] || nil
-      end
-      
-      def syncTable(args={})
-        
-      end
-      
-      def syncHost(args={})
-        
-      end
-      
-      def syncPool(args={})
-        
+        threadPoolSize = args[:threadPoolSize] || 16
+        pool = ThreadPool::Threadpool.new(threadPoolSize)
+        Mysqladmin::Pool.connectionPools[args[:poolName]].each do |connectionName|
+          pool.process {
+            @replStatus[connectionName] = repStatusHost(:connectionName = connectionName)
+          }
+        end
+        pool.join
       end
     end
   end
