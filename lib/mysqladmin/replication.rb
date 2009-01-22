@@ -21,10 +21,16 @@ module Mysqladmin
         dbh = Mysqladmin::Exec.new(:connectionName => @slave, :sql => "SHOW SLAVE STATUS")
         dbh.go
         res = dbh.fetch_hash
-        @sbm = res["Seconds_Behind_Master"]
-        @io = res["Slave_IO_Running"]
-        @sql = res["Slave_SQL_Running"]
-        
+        sbm = res["Seconds_Behind_Master"].to_i
+        io = res["Slave_IO_Running"].upcase
+        sql = res["Slave_SQL_Running"].upcase
+        if((io != "YES") || (sql != "YES"))
+          return false
+        elsif(sbm > @sbmLimit)
+          return false
+        else
+          return true
+        end
       end
   
       def repStatusPool(args={})
