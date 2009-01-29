@@ -8,14 +8,17 @@ module Mysqladmin
       @replica = args[:replica] || nil
     end
     
-    def syncTable(args={})
-      @source = args[:source] || @source
-      @replica = args[:replica] || @replica
+    def syncTable(args={:overwriteIfExists => true, :crashIfExists => false, :syncSlave => true})
       req(:required => [:dbName, :tableName],
           :argsObject => args)
+      source = @source unless args.has_key?(:source)
+      replica = @replica unless args.has_key?(:replica)
       
       srcTableStruct = {}
       repTableStruct = {}
+      
+      # Gather table statistics
+      srcTableData = Mysqladmin::Statistics.new(:connectionName => source).table(:tableName => args[:tableName], :dbName => args[:dbName])
       
       # Get the source table structure
       sdbh = Mysqladmin::Exec.new(:connectionName => @source)
@@ -72,7 +75,8 @@ module Mysqladmin
         end
       end
       
-      sdbh.go(:sql => "SHOW TABLE ")
+      if (tableData[:rows] < 100000) && (tableData[:dataLength] < 134217728)
+        sdbh.go(:)
     end
     
     def syncDb(args={})
