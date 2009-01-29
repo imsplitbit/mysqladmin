@@ -77,12 +77,9 @@ module Mysqladmin
       
     end
     
-    def syncHost(args={})
+    def syncHosts(args={})
       
     end
-    
-    def syncPool(args={})
-      
-    end
+
   end
 end
