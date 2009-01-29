@@ -40,7 +40,7 @@ module Mysqladmin
       end
       
       # Get the replica table structure
-      rdbh = Mysqladmin:Exec.new(:connectionName => @replica)
+      rdbh = Mysqladmin::Exec.new(:connectionName => @replica)
       rdbh.use(args[:dbName])
       rdbh.go(:sql => "SHOW CREATE TABLE #{args[:tableName]}")
       if rdbh.rows == 1
@@ -63,14 +63,16 @@ module Mysqladmin
           srcTableStruct[fieldName].keys.each do |fieldAttribute|
             if(repTableStruct[fieldName].has_key?(fieldAttribute) && (repTableStruct[fieldName][fieldAttribute] != srcTableStruct[fieldName][fieldAttribute]))
               case fieldAttribute
-              when "Type" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute]}")
-              when "Null" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute] == "NO" ? "NOT NULL" : "NULL"}")
-              when "Default" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' DEFAULT '#{srcTableStruct[fieldName][fieldAttribute]}'")
+                when "Type" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute]}")
+                when "Null" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute] == "NO" ? "NOT NULL" : "NULL"}")
+                when "Default" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' DEFAULT '#{srcTableStruct[fieldName][fieldAttribute]}'")
               end
             end
           end
         end
       end
+      
+      sdbh.go(:sql => "SHOW TABLE ")
     end
     
     def syncDb(args={})
