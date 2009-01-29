@@ -62,7 +62,7 @@ module Mysqladmin
         srcTableStruct.keys.each do |fieldName|
           srcTableStruct[fieldName].keys.each do |fieldAttribute|
             if(repTableStruct[fieldName].has_key?(fieldAttribute) && (repTableStruct[fieldName][fieldAttribute] != srcTableStruct[fieldName][fieldAttribute]))
-              case fieldAttribute:
+              case fieldAttribute
               when "Type" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute]}")
               when "Null" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' #{srcTableStruct[fieldName][fieldAttribute] == "NO" ? "NOT NULL" : "NULL"}")
               when "Default" then rdbh.go(:sql => "ALTER TABLE #{args[:tableName]} MODIFY '#{fieldName}' DEFAULT '#{srcTableStruct[fieldName][fieldAttribute]}'")
