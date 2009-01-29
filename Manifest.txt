@@ -20,13 +20,14 @@ lib/mysqladmin/exec.rb
 lib/mysqladmin/monitor.rb
 lib/mysqladmin/perfstat.rb
 lib/mysqladmin/replication.rb
-lib/mysqladmin/storage.rb
+lib/mysqladmin/statistics.rb
 lib/mysqladmin/thread.rb
 lib/mysqladmin/user.rb
 lib/mysqladmin/system.rb
 lib/mysqladmin/serialize.rb
 lib/mysqladmin/files.rb
 lib/mysqladmin/cluster.rb
+lib/mysqladmin/sync.rb
 script/console
 script/destroy
 script/generate

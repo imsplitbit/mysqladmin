@@ -1,5 +1,5 @@
 module Mysqladmin
-  class Storage
+  class Statistics
     include Mysqladmin::Arguments
     
     def initialize(args={})
@@ -11,6 +11,11 @@ module Mysqladmin
       req(:required => [:tableName, :dbName],
           :argsObject => args)
       dbh = Mysqladmin::Exec.new(:connectionName = args[:connectionName])
+      dbh.use(args[:dbName])
+      dbh.go(:sql => "SHOW TABLE STATUS LIKE '#{args[:tableName]}'")
+      if dbh.rows > 0
+        
+      end
     end
   end
 end
