@@ -77,8 +77,8 @@ module Mysqladmin
     end
     
     # the following are just wrappers for the native mysql client lib functions
-    def use(dbName)
-      @dbh.select_db(dbName)
+    def use(args)
+      @dbh.select_db(args[:dbName])
     end
     
     def listTables
