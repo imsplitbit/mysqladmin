@@ -25,7 +25,7 @@ lib/mysqladmin/thread.rb
 lib/mysqladmin/user.rb
 lib/mysqladmin/system.rb
 lib/mysqladmin/serialize.rb
-lib/mysqladmin/files.rb
+lib/mysqladmin/filesystem.rb
 lib/mysqladmin/cluster.rb
 lib/mysqladmin/sync.rb
 script/console
