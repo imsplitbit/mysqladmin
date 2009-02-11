@@ -2,6 +2,7 @@ module Mysqladmin
   class Replication
     include Mysqladmin::Arguments
     include Mysqladmin::Serialize
+    include Mysqladmin::ServerInfo
     
     class Status
       attr_accessor :replStatus
@@ -58,6 +59,10 @@ module Mysqladmin
         pool.join
       end
       
+      # Valid Arguments:
+      #       {
+      #         :source => The server on which you wish to gather the current master status
+      #       }
       def masterStatus(args={})
         args[:source] = @source unless args.has_key?(:source)
         req(:required => [:source],

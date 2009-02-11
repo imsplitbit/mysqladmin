@@ -2,10 +2,20 @@ module Mysqladmin
   class Statistics
     include Mysqladmin::Arguments
     
+    # Valid Arguments:
+    #     {
+    #       :connectionName => The named connection to use to gather statistics on
+    #     }
     def initialize(args={})
       @connectionName = args[:connectionName] || nil
     end
     
+    # Valid Arguments:
+    #     {
+    #       :connectionName => The named connection to use to gather table statistics on,
+    #       :tableName => The table we want statistics on,
+    #       :dbName => The name of the database the table belongs to
+    #     }
     def table(args={})
       args[:connectionName] = @connectionName unless args.has_key?(:connectionName)
       req(:required => [:tableName, :dbName],
@@ -30,6 +40,11 @@ module Mysqladmin
         end
       end
       
+      # Valid Arguments:
+      #       {
+      #         :connectionName => The named connection to use for database statistics,
+      #         :dbName => The database to gather statistics on
+      #       }
       def database(args={})
         args[:connectionName] = @connectionName unless args.has_key?(:connectionName)
         req(:required => [:dbName],
@@ -38,10 +53,44 @@ module Mysqladmin
         dbh = Mysqladmin::Exec.new(:connectionName => args[:connectionName])
         dbh.use(args[:dbName])
         dbh.listTables.each do |tableName|
-          data[tableName] = table(:tableName => tableName)
+          data[tableName] = table(:tableName => args[:tableName], :dbName => args[:dbName], :connectionName => args[:connectionName])
         end
         return data
       end
+      
+      def serverVariables(args={})
+        args[:connectionName = @connectionName unless args.has_key?(:connectionName)]
+        req(:required => [:connectionName],
+            :argsObject => args)
+        status = {}
+        major, minor, patch = serverVersion(:connectionName => args[:connectionName])
+        dbh = Mysqladmin::Exec.new(:connectionName => args[:connectionName])
+        if major <= 4
+          dbh.go(:sql => "SHOW STATUS")
+        else
+          dbh.go(:sql => "SHOW GLOBAL STATUS")
+        end
+        res = dbh.fetch_hash
+        res.keys.each do |key|
+          value = res[key]
+          if value[/^\d+$/]
+            value = value.to_i
+          end
+          symkey = key.split("_")
+          counter = 0
+          symkey.size.times do
+            if counter == 0
+              symkey[counter] = symkey[counter].downcase
+            else
+              symkey[counter] = symkey[counter].capitalize
+            end
+            counter += 1
+          end
+          status[symkey.join.to_sym] = res[key]
+        end
+        return status
+      end
+      
       
     end
   end

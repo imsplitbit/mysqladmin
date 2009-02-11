@@ -5,3 +5,7 @@
 # /storageDir/hostname/dbName/user.yml
 #
 # This will facilitate a clean backup storage
+module Mysqladmin
+  class FileSystem
+  end
+end
