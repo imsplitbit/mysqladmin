@@ -3,6 +3,9 @@ module Mysqladmin
     class Table
       include Mysqladmin::Arguments
       
+      # :tableName => Name of the table to operate on,
+      # :dbName => Name of the database containing the table from :tableName,
+      # :connectionName => Name of the connection in the Pool
       def initialize(args={})
         req(:required => [:tableName, :dbName, :connectionName],
             :argsObject => args)
@@ -13,6 +16,7 @@ module Mysqladmin
         return true
       end
       
+      # :lockType => Type of lock to acquire on the table
       def lock(args={})
         validLockTypes = ["READ", "READ LOCAL", "WRITE"]
         if args.has_key?(:lockType)
@@ -26,11 +30,14 @@ module Mysqladmin
         return true
       end
       
+      #No arguments required because unlock doesn't take any.  Just issue on your
+      #object to release all held locks.
       def unlock
         @dbh.go(:sql => "UNLOCK TABLES")
         return true
       end
       
+      # :repairType => Which type of repair to do on the table
       def repair(args={})
         validRepairTypes = ["EXTENDED", "QUICK"]
         if args.has_key?(:repairType)
@@ -38,10 +45,13 @@ module Mysqladmin
             return false
           end
         end
+        repairType = args[:repairType].upcase || "QUICK"
+        @dbh.use(:dbName => @dbName)
         @dbh.go(:sql => "REPAIR TABLE '#{@tableName}' #{repairType}")
         return true
       end
       
+      # :checkType => The type of check to run on the table
       def check(args={})
         validCheckTypes = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
         if args.has_key?(:checkType)
@@ -59,6 +69,8 @@ module Mysqladmin
       attr_accessor :repairs, :locks
       include Mysqladmin::Arguments
       
+      # :dbName => The name of the Database to operate on ,
+      # :connectionName => The host this database is on
       def initialize(args={})
         req(:required => [:dbName, :connectionName],
             :argsObject => args)
@@ -71,6 +83,7 @@ module Mysqladmin
         return true
       end
       
+      # :lockType => Type of lock to acquire on the tables of this database
       def lock(args={})
         validLockTypes = ["READ", "READ LOCAL", "WRITE"]
         if args.has_key?(:lockType)
@@ -86,6 +99,8 @@ module Mysqladmin
         return true
       end
       
+      #No arguments required because unlock doesn't take any.  Just issue on your
+      #object to release all held locks.
       def unlock
         @locks.each do |lock|
           lock.unlock
@@ -93,6 +108,7 @@ module Mysqladmin
         return true
       end
       
+      # :repairType => Which type of repair to do on the tables of this database
       def repair(args={})
         validRepairTypes = ["EXTENDED", "QUICK"]
         if args.has_key?(:repairType)
@@ -108,6 +124,7 @@ module Mysqladmin
         return true
       end
       
+      # :checkType => The type of check to run on the tables of this database
       def check(args={})
         validCheckTypes = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
         if args.has_key?(:checkType)

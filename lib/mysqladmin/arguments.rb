@@ -1,10 +1,7 @@
 module Mysqladmin
   module Arguments
-    # Valid arguments:
-    # {
-    #   :required => Array of required keys in the args hash,
-    #   :argsObject => arg object to inspect.
-    # }
+    # :required => Array of required keys in the args hash,
+    # :argsObject => arg object to inspect.
     def req(args)
       args[:required].each do |req|
         unless args[:argsObject].keys.include?(req)

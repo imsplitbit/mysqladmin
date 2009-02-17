@@ -11,11 +11,17 @@ module Mysqladmin
     def syncTable(args={:overwriteIfExists => true, :crashIfExists => false, :syncSlave => true})
       req(:required => [:dbName, :tableName],
           :argsObject => args)
-      source = @source unless args.has_key?(:source)
+      source = args.has_key?(:source) ? args[:source] : @source
       replica = @replica unless args.has_key?(:replica)
       
       buJob = Mysqladmin::Backup.new
-      
+      buJob.backupHost(:perTable => true,
+                       :onlyTheseTables => [args[:tableName]],
+                       :srcHost => source)
+      buJob.restoreDbFromBackup(:srcDb => args[:dbName],
+                                :srcHost => source,
+                                :destHost => replica,
+                                :overwriteIfExists => true)
       # srcTableStruct = {}
       #       repTableStruct = {}
       #       
@@ -83,11 +89,11 @@ module Mysqladmin
     end
     
     def syncDb(args={})
-      
+      raise NoMethodError, "Not implemented yet"
     end
     
     def syncHosts(args={})
-      
+      raise NoMethodError, "Not implemented yet"
     end
 
   end

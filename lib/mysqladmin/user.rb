@@ -10,21 +10,18 @@ module Mysqladmin
     attr_accessor :user, :srcHost, :srcConnection, :destConnection
     attr_reader :grants, :revokes
     
-    # Valid arguments:
-    # {
-    #   :user => User we are going to be manipulating,
-    #   :srcHost => The host from which :user will be connecting from, think of this
-    #               in terms of the grant statement ... TO ':user'@':srcHost'...,
-    #   :password => If a change of password is desired, set this to the desired
-    #                password.  This will overwrite the existing password when
-    #                you run Object.setGrants,
-    #   :srcConnection => Name of the connection being treated as the source for
-    #                     getting/setting grants,
-    #   :destConnection => Name of the connection being treated as the destination
-    #                      when setting grants/revokes.  Defaults to :srcConnection.
-    #                      This is usually modified if you are migrating user
-    #                      accounts from one server to another.
-    # }
+    # :user => User we are going to be manipulating,
+    # :srcHost => The host from which :user will be connecting from, think of this
+    #             in terms of the grant statement ... TO ':user'@':srcHost'...,
+    # :password => If a change of password is desired, set this to the desired
+    #              password.  This will overwrite the existing password when
+    #              you run Object.setGrants,
+    # :srcConnection => Name of the connection being treated as the source for
+    #                   getting/setting grants,
+    # :destConnection => Name of the connection being treated as the destination
+    #                    when setting grants/revokes.  Defaults to :srcConnection.
+    #                    This is usually modified if you are migrating user
+    #                    accounts from one server to another.
     def initialize(args = {})
       @grants = []
       @revokes = []
@@ -36,17 +33,13 @@ module Mysqladmin
       @destConnection = args[:destConnection] || nil
     end
     
-    # Valid arguments:
-    # {
-    #   :connectionName => Name of the connection to use in the resulting
-    #                      Mysqladmin::Exec object.  Defaults to @srcConnection
-    #                      if not set.,
-    # OPTIONAL: Defaults to nil
-    #   :customGrantSQL => If you have a custom sql to show grants or otherwise
-    #                      retrieve useful user info, do it here.  This is an SQL
-    #                      injection point so do not expoose this outside of your
-    #                      script.
-    # }
+    # :connectionName => Name of the connection to use in the resulting
+    #                    Mysqladmin::Exec object.  Defaults to @srcConnection
+    #                    if not set.,
+    # :customGrantSQL => If you have a custom sql to show grants or otherwise
+    #                    retrieve useful user info, do it here.  This is an SQL
+    #                    injection point so do not expoose this outside of your
+    #                    script.
     def getGrants(args = {})
       args[:customGrantSQL] = nil unless args.has_key?(:customGrantSQL)
       args[:connectionName] = @srcConnection unless args.has_key?(:connectionName)
@@ -71,11 +64,8 @@ module Mysqladmin
       args.delete(:sql)
     end
     
-    # Valid arguments:
-    # {
-    #   :connectionName => Name of the connection to apply the contents of @grants
-    #                      to.  Defaults to @destConnection if not set.
-    # }
+    # :connectionName => Name of the connection to apply the contents of @grants
+    #                    to.  Defaults to @destConnection if not set.
     def setGrants(args = {})
       args[:connectionName] = @destConnection unless args.has_key?(:connectionName)
       
@@ -92,14 +82,11 @@ module Mysqladmin
       args.delete(:connectionName)
     end
     
-    # Valid arguments:
-    # {
-    #   :user => Username we are manipulating,
-    #   :srcHost => The host from which :user will be connecting from, think of this
-    #               in terms of the grant statement ... TO ':user'@':srcHost'...,
-    #   :password => Password to set for ':user'@':srcHost',
-    #   :connectionName => Server on which you wish to set args[:user]'s password.
-    # }
+    # :user => Username we are manipulating,
+    # :srcHost => The host from which :user will be connecting from, think of this
+    #             in terms of the grant statement ... TO ':user'@':srcHost'...,
+    # :password => Password to set for ':user'@':srcHost',
+    # :connectionName => Server on which you wish to set args[:user]'s password.
     def setPassword(args)
       args[:user] = @user unless args.has_key?(:user)
       args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
@@ -123,25 +110,18 @@ module Mysqladmin
       args.delete(:connectionName)
     end
     
-    # Valid arguments:
-    # {
-    #   :sql => Grant statement to append to the @grants Array.
-    # OPTIONAL:
-    #   :privileges => Array of privileges to Grant/Revoke,
-    #   :srcHost => host the user will be connecting from,
-    #   :user => Username to affect,
-    #   :password => Password to use,
-    #   :dbName => Database name,
-    #   :tableName => Table
-    # }
+    # :sql => Grant statement to append to the @grants Array.
+    # :privileges => Array of privileges to Grant/Revoke,
+    # :srcHost => host the user will be connecting from,
+    # :user => Username to affect,
+    # :password => Password to use,
+    # :dbName => Database name,
+    # :tableName => Table
     def addItem(args)
       # Mandatory args:
       req(:required => [:sql,
                         :type],
           :argsObject => args)
-      
-      
-      
       case args[:type]
       when :grant then @grants << args[:sql]
       when :revoke then @revokes << args[:sql]
@@ -173,11 +153,6 @@ module Mysqladmin
     #
     # Use Object.deleteUser(args) to remove a user once and for all from
     # the args[:destConnection] server.
-    #
-    # Valid arguments:
-    # {
-    #   NONE
-    # }
     def convGrantsToRevokes
       if @revokes.empty?
         @grants.delete_if{|x| x == nil}.each do |grant|
@@ -215,11 +190,8 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :connectionName => Server on which you wish to revoke args[:user]'s granted
-    #                      privileges.
-    # }
+    # :connectionName => Server on which you wish to revoke args[:user]'s granted
+    #                    privileges.
     def setRevokes(args = {})
       args[:connectionName] = @srcConnection unless args.has_key?(:connectionName)
       

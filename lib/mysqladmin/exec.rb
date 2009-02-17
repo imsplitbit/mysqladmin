@@ -3,11 +3,8 @@ module Mysqladmin
     include Mysqladmin::Arguments
     
     attr_accessor :sql
-    # Valid arguments:
-    # {
-    #   :sql => SQL to run on args[:connectionName] from pool object Mysqladmin::Pool,
-    #   :connectionName => Name of the connection we are using to execute args[:sql]
-    # }
+    # :sql => SQL to run on args[:connectionName] from pool object Mysqladmin::Pool,
+    # :connectionName => Name of the connection we are using to execute args[:sql]
     def initialize(args)
       @sql = args[:sql] || nil
       
@@ -24,7 +21,7 @@ module Mysqladmin
     # the sql being "GO'd" then use Object.sql="DELETE ALL OF MY STUFF" or
     # or something equally fun.  Wheeeee!!!!
     def go(args = {})
-      args = {:sql => @sql}
+      args[:sql] = @sql unless args.has_key?(:sql)
       
       # Mandatory args:
       req(:required => [:sql],
@@ -60,10 +57,7 @@ module Mysqladmin
     # is executed.  It pretty much sux now cause all it does is spit the same
     # sql back out.  But it will get there, be patient.
     #
-    # Valid arguments:
-    # {
-    #   :sql => SQL statement to sanitize, returns String
-    # }
+    # :sql => SQL statement to sanitize, returns String
     def cleanse(args)
       # Clean sql, need to add code to escape quotes and prevent deletions without conditions
       @sql

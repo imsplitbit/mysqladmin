@@ -14,20 +14,16 @@ module Mysqladmin
     attr_accessor :textFilter
     attr_reader :taskResults
     
-    # Valid arguments:
-    # {
-    # OPTIONAL: Defaults to nil
-    #   :srcHost => Host you wish to perform backups on,
-    #   :srcDb => Name of the database you wish to backup,
-    #   :srcPool => Name of the pool on which you wish to operate,
-    #   :destHost => Server on which to apply mysqldump files,
-    #   :textFilter => Usually would be a sed command to change data as it is streamed to gzip,
-    #   :perTable => Use if you want your backups to be done on a per table basis,
-    #   :onlyTheseTables => Use if you want to backup tables that match the names in this list,
-    #   :timeStamp => true/false do you want a timestap to precede the dbname/tablename in your
-    #                 backup files,
-    #   :debug => Set to true to ouput all actions to stdout
-    # }
+    # :srcHost => Host you wish to perform backups on,
+    # :srcDb => Name of the database you wish to backup,
+    # :srcPool => Name of the pool on which you wish to operate,
+    # :destHost => Server on which to apply mysqldump files,
+    # :textFilter => Usually would be a sed command to change data as it is streamed to gzip,
+    # :perTable => Use if you want your backups to be done on a per table basis,
+    # :onlyTheseTables => Use if you want to backup tables that match the names in this list,
+    # :timeStamp => true/false do you want a timestap to precede the dbname/tablename in your
+    #               backup files,
+    # :debug => Set to true to ouput all actions to stdout
     def initialize(args = {})
       @srcHost = args[:srcHost] || nil
       @srcDb = args[:srcDb] || nil
@@ -49,17 +45,13 @@ module Mysqladmin
       raise RuntimeError, "Method not implemented"
     end
     
-    # Valid arguements:
-    # {
-    #   :srcDb => "Dbname to backup",
-    #   :srcHost => Server to connect to in order to get the backup of :srcDb,
-    # OPTIONAL: Defaults to nil
-    #   :perTable => true to get a perTable table backup,
-    #   :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    #   :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    #   :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    #   :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    # }
+    # :srcDb => "Dbname to backup",
+    # :srcHost => Server to connect to in order to get the backup of :srcDb,
+    # :perTable => true to get a perTable table backup,
+    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
+    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
     def backupDb(args = {})
       # Set all values in args if there are instance values set, args keys have
       # precidence.
@@ -156,16 +148,12 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :srcHost => Host to backup,
-    # OPTIONAL
-    #   :perTable => true to get a perTable table backup,
-    #   :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    #   :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    #   :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    #   :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    # }
+    # :srcHost => Host to backup,
+    # :perTable => true to get a perTable table backup,
+    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
+    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
     def backupHost(args)
       req(:required => [:srcHost],
           :argsObject => args)
@@ -197,17 +185,13 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :srcPool => Pool to backup,
-    # OPTIONAL
-    #   :threadPoolSize => Number of threads to spawn for the pool operations, default is 40.
-    #   :perTable => true to get a perTable table backup,
-    #   :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    #   :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    #   :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    #   :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    # }
+    # :srcPool => Pool to backup,
+    # :threadPoolSize => Number of threads to spawn for the pool operations, default is 40.
+    # :perTable => true to get a perTable table backup,
+    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
+    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
     def backupPool(args)
       req(:required => [:srcPool],
           :argsObject => args)
@@ -236,30 +220,27 @@ module Mysqladmin
       pool.join
     end
     
-    # Valid arguments:
-    # {
-    #   :srcDb => Database name that is being restored,
-    #   :srcHost => Host the backups were run on,
-    #   :destHost => Name of the host we want to restore to,
-    #   :destDb => Name of the database you want to restore to,
-    #   :textFilter => Any bash run-able command that will filter text.
-    #                  i.e. sed -e s/foo/bar/g,
-    #   :backupFiles => files to restore from, if you aren't working from a
-    #                   serialzed object,
-    #   :backupFileFormat => Assumed gzip compressed, we will check to be sure
-    #                        regardless, if file ends in .sql it is assumed
-    #                        clear text.  If the file ends in .gz or .tgz it is
-    #                        assumed compressed text.  We will add more options
-    #                        when gzip sucks worse than other things. Perhaps bzip?
-    #                        mixed format, i.e. .sql and .gz is not permitted
-    #                        just now.  Will allow that later.
-    #   :crashIfExists => Set to true if you want to raise an exception if
-    #                     targets already exist, Defaults to false.
-    #   :overwriteIfExists => Set to true if you want to overwrite the :destDb
-    #                         with all new data, we won't be dropping the db to
-    #                         create it fresh but any tables that are there will
-    #                         be overwritten by the restore.
-    # }
+    # :srcDb => Database name that is being restored,
+    # :srcHost => Host the backups were run on,
+    # :destHost => Name of the host we want to restore to,
+    # :destDb => Name of the database you want to restore to,
+    # :textFilter => Any bash run-able command that will filter text.
+    #                i.e. sed -e s/foo/bar/g,
+    # :backupFiles => files to restore from, if you aren't working from a
+    #                 serialzed object,
+    # :backupFileFormat => Assumed gzip compressed, we will check to be sure
+    #                      regardless, if file ends in .sql it is assumed
+    #                      clear text.  If the file ends in .gz or .tgz it is
+    #                      assumed compressed text.  We will add more options
+    #                      when gzip sucks worse than other things. Perhaps bzip?
+    #                      mixed format, i.e. .sql and .gz is not permitted
+    #                      just now.  Will allow that later.
+    # :crashIfExists => Set to true if you want to raise an exception if
+    #                   targets already exist, Defaults to false.
+    # :overwriteIfExists => Set to true if you want to overwrite the :destDb
+    #                       with all new data, we won't be dropping the db to
+    #                       create it fresh but any tables that are there will
+    #                       be overwritten by the restore.
     def restoreDbFromBackup(args = {})
       # We need to get our list of files to restore from based on the database name
       # and the host it was backed up from.
@@ -350,12 +331,9 @@ module Mysqladmin
       args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
     end
     
-    # Valid arguments:
-    # {
-    #   :srcHost => Host to check backup success,
-    #   :srcDb => Db to check backups.
-    #   :task => :backup/:restore
-    # }
+    # :srcHost => Host to check backup success,
+    # :srcDb => Db to check backups.
+    # :task => :backup/:restore
     def success?(args = {})
       args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
       args[:srcDb] = @srcDb unless args.has_key?(:srcDb)
@@ -376,19 +354,16 @@ module Mysqladmin
     
     private
     
-    # Valid arguments:
-    # {
-    #   :srcHost => Name of the host we are operating on right now, used purely for
-    #               storing the resulting data.  This is because we don't want to
-    #               implement a pure ruby mysqldump as mysqldump is going to do the
-    #               best job backing up our dbs.  Yay MySQL Programmers!  You are
-    #               *WAY* smarter than I am.,
-    #   :srcDb => The name of the database which is being backed up from on :srcHost,
-    #   :perTable => If true then the :resultLog will contain a list of tables and
-    #                the results of their backups,
-    #   :tableName => If :perTable is true then we need this to populate the
-    #                 :resultLog hash.
-    # }
+    # :srcHost => Name of the host we are operating on right now, used purely for
+    #             storing the resulting data.  This is because we don't want to
+    #             implement a pure ruby mysqldump as mysqldump is going to do the
+    #             best job backing up our dbs.  Yay MySQL Programmers!  You are
+    #             *WAY* smarter than I am.,
+    # :srcDb => The name of the database which is being backed up from on :srcHost,
+    # :perTable => If true then the :resultLog will contain a list of tables and
+    #              the results of their backups,
+    # :tableName => If :perTable is true then we need this to populate the
+    #               :resultLog hash.
     def checkExitCode(args)
       if $?.exitstatus == 0
         args[:status] = true
@@ -398,24 +373,21 @@ module Mysqladmin
       args
     end
     
-    # Valid arguments:
-    # {
-    #   :task => :backup/:restore
+    # :task => :backup/:restore
     # *if :task => :backup*
-    #   :srcDb => Name of the database we are backing up,
-    #   :srcHost => Host from which we are taking the backup,
-    #   :status => true/false, The status of the last run commandline command,
-    #   :perTable => true/false, Were the backups run on a pertable basis.
-    #                *requires :tableName*,
-    #   :tableName => Name of the table being operated on. *requires :perTable*,
+    # :srcDb => Name of the database we are backing up,
+    # :srcHost => Host from which we are taking the backup,
+    # :status => true/false, The status of the last run commandline command,
+    # :perTable => true/false, Were the backups run on a pertable basis.
+    #              *requires :tableName*,
+    # :tableName => Name of the table being operated on. *requires :perTable*,
     # *elsif :task => :restore*
-    #   :status => true/false, The status of the last run commandline command,
-    #   :perTable => true/false, Were the backups run on a pertable basis.
-    #                *requires :tableName*,
-    #   :destDb => Name of the database we are restoring to,
-    #   :destHost => Host we are restoring :destDb to,
-    #   :backupFile => File we are attempting to restore from.  *requires :task => :restore*,
-    # }
+    # :status => true/false, The status of the last run commandline command,
+    # :perTable => true/false, Were the backups run on a pertable basis.
+    #              *requires :tableName*,
+    # :destDb => Name of the database we are restoring to,
+    # :destHost => Host we are restoring :destDb to,
+    # :backupFile => File we are attempting to restore from.  *requires :task => :restore*,
     def updateTaskResults(args)
       if args[:task] == :backup
         req(:required => [:srcDb,
@@ -443,21 +415,17 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :srcDb => Db to backup from,
-    #   :srcHost => Name of the connection in the connection manager i.e. Mysqladmin::Pool,
-    #   :srcIp => IP Address for :srcHost,
-    #   :user => User to connect to :srcIp as,
-    #   :password => Password to authenticate with for :user on :srcIp,
-    #   :procsAndTriggers => String to append to mysqldump to backup stored procedures and triggers for :srcDb,
-    #   :extendedInsert => String to append to mysqldump to allow for or eliminate multi-row inserts,
-    # OPTIONAL:
-    #   :tableName => Table to backup from :srcDb, required if this is a perTable
-    #                 based backup.
-    #   :timeStamp => If not nil or false prepend a timestamp to the backup filename,
-    #   :textFilter => commandline command to filter/replace text
-    # }
+    # :srcDb => Db to backup from,
+    # :srcHost => Name of the connection in the connection manager i.e. Mysqladmin::Pool,
+    # :srcIp => IP Address for :srcHost,
+    # :user => User to connect to :srcIp as,
+    # :password => Password to authenticate with for :user on :srcIp,
+    # :procsAndTriggers => String to append to mysqldump to backup stored procedures and triggers for :srcDb,
+    # :extendedInsert => String to append to mysqldump to allow for or eliminate multi-row inserts,
+    # :tableName => Table to backup from :srcDb, required if this is a perTable
+    #               based backup.
+    # :timeStamp => If not nil or false prepend a timestamp to the backup filename,
+    # :textFilter => commandline command to filter/replace text
     def doBackup(args)
       req(:required => [:srcDb,
                         :extendedInsert,
@@ -482,20 +450,15 @@ module Mysqladmin
       # puts "#{coreReqs(:binary => "mysqldump")} --opt -Q #{args[:extendedInsert]} #{args[:procsAndTriggers]} -u #{args[:user]} #{args[:password]} -h #{args[:srcIp]} #{backupSrc} #{args[:textFilter]} | gzip > #{fileName}"
     end
     
-    # Valid arguments:
-    # {
-    # REQUIRED:
-    #   :destDb => Name of the database we are restoring from the backup, not the
-    #             same as :destDb but can be,
-    #   :destHost => Name of the host we are restoring to,
-    #   :backupFiles => Array object containing filenames with paths if outside of
-    #                   cwd,
-    # OPTIONAL:
-    #   :backupFileFormat => The format of the files being passed in.  This is set
-    #                        in the restoreFromBackup method but can be overwritten
-    #                        if you think you know better. USE CAUTION!,
-    #   :textFilter => commandline command to filter text
-    # } 
+    # :destDb => Name of the database we are restoring from the backup, not the
+    #           same as :destDb but can be,
+    # :destHost => Name of the host we are restoring to,
+    # :backupFiles => Array object containing filenames with paths if outside of
+    #                 cwd,
+    # :backupFileFormat => The format of the files being passed in.  This is set
+    #                      in the restoreFromBackup method but can be overwritten
+    #                      if you think you know better. USE CAUTION!,
+    # :textFilter => commandline command to filter text
     def doRestore(args)
       req(:required => [:backupFileFormat,
                         :backupFiles,

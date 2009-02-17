@@ -2,14 +2,9 @@ module Mysqladmin
   module System
     include Mysqladmin::Arguments
     
-    # Valid arguments:
-    # {
-    #   *required*
-    #   :binary => Binary file that is required for continued operation,
-    #   *optional*
-    #   :cmdArgs => Arguments to add to the end of the command returned if
-    #               arguments are required for proper operation.
-    # }
+    # :binary => Binary file that is required for continued operation,
+    # :cmdArgs => Arguments to add to the end of the command returned if
+    #             arguments are required for proper operation.
     def coreReqs(args)
       # Mandatory args:
       req(:required => [:binary],

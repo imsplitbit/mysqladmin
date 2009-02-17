@@ -2,20 +2,14 @@ module Mysqladmin
   class Statistics
     include Mysqladmin::Arguments
     
-    # Valid Arguments:
-    #     {
-    #       :connectionName => The named connection to use to gather statistics on
-    #     }
+    # :connectionName => The named connection to use to gather statistics on
     def initialize(args={})
       @connectionName = args[:connectionName] || nil
     end
     
-    # Valid Arguments:
-    #     {
-    #       :connectionName => The named connection to use to gather table statistics on,
-    #       :tableName => The table we want statistics on,
-    #       :dbName => The name of the database the table belongs to
-    #     }
+    # :connectionName => The named connection to use to gather table statistics on,
+    # :tableName => The table we want statistics on,
+    # :dbName => The name of the database the table belongs to
     def table(args={})
       args[:connectionName] = @connectionName unless args.has_key?(:connectionName)
       req(:required => [:tableName, :dbName],
@@ -40,11 +34,8 @@ module Mysqladmin
         end
       end
       
-      # Valid Arguments:
-      #       {
-      #         :connectionName => The named connection to use for database statistics,
-      #         :dbName => The database to gather statistics on
-      #       }
+      # :connectionName => The named connection to use for database statistics,
+      # :dbName => The database to gather statistics on
       def database(args={})
         args[:connectionName] = @connectionName unless args.has_key?(:connectionName)
         req(:required => [:dbName],
@@ -58,8 +49,9 @@ module Mysqladmin
         return data
       end
       
+      # :connectionName => The named connection to use for database variables
       def serverVariables(args={})
-        args[:connectionName = @connectionName unless args.has_key?(:connectionName)]
+        args[:connectionName] = @connectionName unless args.has_key?(:connectionName)
         req(:required => [:connectionName],
             :argsObject => args)
         status = {}
@@ -90,7 +82,6 @@ module Mysqladmin
         end
         return status
       end
-      
       
     end
   end
