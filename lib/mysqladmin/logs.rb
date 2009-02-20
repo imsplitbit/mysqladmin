@@ -11,7 +11,8 @@ module Mysqladmin
       @slowLog = nil
       @genLog = nil
       @relayLog = nil
-      
     end
+    
+    
   end
 end
