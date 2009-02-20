@@ -21,7 +21,7 @@ module Mysqladmin
     end
     
     # :connectionName => The named connection to use for database variables
-    def serverVariables(args = { :type => "VARIABLES" })
+    def self.serverVariables(args = { :type => "VARIABLES" })
       req(:required => [:connectionName], :argsObject => args)
       validTypes = ["VARIABLES", "STATUS"]
       unless validTypes.include?(args[:type].upcase)
@@ -53,7 +53,7 @@ module Mysqladmin
         end
         data[symkey.join.to_sym] = res[key]
       end
-      return status
+      return data
     end
   end
 end
