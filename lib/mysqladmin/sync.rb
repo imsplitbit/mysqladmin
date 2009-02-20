@@ -81,7 +81,6 @@ module Mysqladmin
       #             end
       #           end
       #         end
-      end
       
       if (tableData[:rows] < 100000) && (tableData[:dataLength] < 134217728)
         sdbh.go(:sql => "SELECT *")

@@ -6,18 +6,15 @@ module Mysqladmin
     extend Mysqladmin::Arguments
     
     attr_reader :connections, :connectionPools
-    # Valid arguments:
-    # {
-    #   :defaultPool => Pool to place all connections in by default.  This is
-    #                   set to "all" by default,
-    # OPTIONAL: Defaults to false
-    #   :crashIfExists => Set to true if you want the application to raise an
-    #                     exception if the item you are creating already exists,
-    #   :overwriteIfExists => Set to true if you want the application to nicely
-    #                         close an existing item if you try to create one of
-    #                         the same name.
-    #   :debug => Print everything to stdout instead of doing anything
-    # }
+    
+    # :defaultPool => Pool to place all connections in by default.  This is
+    #                 set to "all" by default,
+    # :crashIfExists => Set to true if you want the application to raise an
+    #                   exception if the item you are creating already exists,
+    # :overwriteIfExists => Set to true if you want the application to nicely
+    #                       close an existing item if you try to create one of
+    #                       the same name.
+    # :debug => Print everything to stdout instead of doing anything
     def self.create(args = {})
       return if defined? @@connections
       @@defaultPool = args.has_key?(:defaultPool) ? args[:defaultPool] : "all"
@@ -38,23 +35,19 @@ module Mysqladmin
       @@connectionPools
     end
     
-    # Valid arguments:
-    # {
-    #   :host => Host to connect to.  This must be an FQDN or IP Address,
-    #   :user => User to connect to :host as,
-    #   :password => Password for :user when connecting to :host,
-    #   :port => Port server on :host is listening on, Defaults to *3306*,
-    #   :connectionName => Human parseable/understandable name for :host, may be
-    #                      set to anything that helps you understand what that
-    #                      host is.  i.e. I use the FQDN for :connectionName,
-    #   :poolName => Pool to add the connection with :host to.  Defaults to "all".
-    #                This is stored in the instance attribute connectionPools
-    #                which is a hash keyed on the pool name.  Each key points
-    #                to an array of :connectionName values,
-    # OPTIONAL: Defaults to instance values if not set, instance values are nil by default.
-    #   :crashIfExists => See initialize(args) above,
-    #   :overwriteIfExists => See initialize(args) above.
-    # }
+    # :host => Host to connect to.  This must be an FQDN or IP Address,
+    # :user => User to connect to :host as,
+    # :password => Password for :user when connecting to :host,
+    # :port => Port server on :host is listening on, Defaults to *3306*,
+    # :connectionName => Human parseable/understandable name for :host, may be
+    #                    set to anything that helps you understand what that
+    #                    host is.  i.e. I use the FQDN for :connectionName,
+    # :poolName => Pool to add the connection with :host to.  Defaults to "all".
+    #              This is stored in the instance attribute connectionPools
+    #              which is a hash keyed on the pool name.  Each key points
+    #              to an array of :connectionName values,
+    # :crashIfExists => See initialize(args) above,
+    # :overwriteIfExists => See initialize(args) above.
     def self.addConnection(args)
       args[:crashIfExists]      = @@crashIfExists unless args.has_key?(:crashIfExists)
       args[:overwriteIfExists]  = @@overwriteIfExists unless args.has_key?(:overwriteIfExists)
@@ -93,13 +86,9 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :poolName => Pool to create,
-    # OPTIONAL: Defaults to instance values if not set, instance values are nil by default.
-    #   :crashIfExists => See initialize(args) above,
-    #   :overwriteIfExists => See initialize(args) above.
-    # }
+    # :poolName => Pool to create,
+    # :crashIfExists => See initialize(args) above,
+    # :overwriteIfExists => See initialize(args) above.
     def self.addPool(args)
       args[:crashIfExists] = @@crashIfExists unless args.has_key?(:crashIfExists)
       args[:overwriteIfExists] = @@overwriteIfExists unless args.has_key?(:overwriteIfExists)
@@ -125,15 +114,11 @@ module Mysqladmin
         true
       end
     end
-    
-    # Valid arguments:
-    # {
-    #   :poolName => Name of the pool to add :connectionName to,
-    #   :connectionName => Name of the connection to include in :poolName,
-    # OPTIONAL: Defaults to instance values if not set, instance values are nil by default.
-    #   :crashIfExists => See initialize(args) above,
-    #   :overwriteIfExists => See initialize(args) above.
-    # }
+
+    # :poolName => Name of the pool to add :connectionName to,
+    # :connectionName => Name of the connection to include in :poolName,
+    # :crashIfExists => See initialize(args) above,
+    # :overwriteIfExists => See initialize(args) above.
     def self.addToPool(args)
       args[:crashIfExists] = @@crashIfExists unless args.has_key?(:crashIfExists)
       args[:overwriteIfExists] = @@overwriteIfExists unless args.has_key?(:overwriteIfExists)
@@ -166,11 +151,8 @@ module Mysqladmin
       end
     end
     
-    # Valid arguments:
-    # {
-    #   :connectionName => Name of the connection to remove from :poolName,
-    #   :poolName => Pool to delete :connectionName from.
-    # }
+    # :connectionName => Name of the connection to remove from :poolName,
+    # :poolName => Pool to delete :connectionName from.
     def self.deleteFromPool(args)
       # Mandatory args:
       req(:required => [:poolName,
@@ -180,10 +162,7 @@ module Mysqladmin
       @@connectionPools[args[:poolName]].delete(args[:connectionName])
     end
     
-    # Valid arguments:
-    # {
     #   :connectionName => Name of the connection to close if it is open.
-    # }
     def self.close(args)
       # Mandatory args:
       req(:required => [:connectionName],
@@ -194,12 +173,9 @@ module Mysqladmin
       deleteFromPool(args)
     end
     
-    # Valid arguments:
-    # {
-    #   :poolName => Name of the pool to totally close and destroy.  All connections
-    #                associated with :poolName will be gracefully closed if the
-    #                connection handle it stores has a Object.close method.
-    # }
+    # :poolName => Name of the pool to totally close and destroy.  All connections
+    #              associated with :poolName will be gracefully closed if the
+    #              connection handle it stores has a Object.close method.
     def self.closePool(args)
       # Mandatory args:
       req(:required => [:poolName],
@@ -217,14 +193,11 @@ module Mysqladmin
     
     private
     
-    # Valid arguments:
-    # {
-    #   :host => FQDN or IP Address to connect to,
-    #   :user => User to connect to :host,
-    #   :password => Password to use when authenticating on :host as :user,
-    #   :port => Port the server on :host is listening on, defaults to 3306.
-    #   :connectionName => Human readable/understandable name to give this connection.
-    # }
+    # :host => FQDN or IP Address to connect to,
+    # :user => User to connect to :host,
+    # :password => Password to use when authenticating on :host as :user,
+    # :port => Port the server on :host is listening on, defaults to 3306.
+    # :connectionName => Human readable/understandable name to give this connection.
     def self.connect(args)
       # Mandatory args:
       req(:required => [:connectionName,
@@ -247,12 +220,6 @@ module Mysqladmin
       @@connections[args[:connectionName]][:queries][:stats][:delete] = 0
       @@connections[args[:connectionName]][:queries][:data] = {}
       @@connections[args[:connectionName]][:queries][:data][:sql] = {}
-      
-      # Because we are assumed to be connecting to these servers as an
-      # administrator we will set some variables to allow us to do our work
-      # unhindered by restrictive settings
-      #@@connections[args[:connectionName]][:dbh].query("set wait_timeout=86400")
-      #@@connections[args[:connectionName]][:dbh].query("set max_allowed_packet=134217728")
     end
   end
 end
