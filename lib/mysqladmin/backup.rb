@@ -2,7 +2,6 @@ require "mysqladmin/arguments"
 require "mysqladmin/serialize"
 require "mysqladmin/system"
 require "mysqladmin/serverinfo"
-require "mysqladmin/thread"
 
 module Mysqladmin
   class Backup
