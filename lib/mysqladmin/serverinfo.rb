@@ -21,7 +21,8 @@ module Mysqladmin
     end
     
     # :connectionName => The named connection to use for database variables
-    def self.serverVariables(args = { :type => "VARIABLES" })
+    def serverVariables(args = {})
+      args[:type] = "VARIABLES" unless args.has_key?(:type)
       req(:required => [:connectionName], :argsObject => args)
       validTypes = ["VARIABLES", "STATUS"]
       unless validTypes.include?(args[:type].upcase)
@@ -31,17 +32,17 @@ module Mysqladmin
       major, minor, patch = serverVersion(:connectionName => args[:connectionName])
       dbh = Mysqladmin::Exec.new(:connectionName => args[:connectionName])
       if major <= 4
-        dbh.go(:sql => "SHOW #{args[:type]}")
+        dbh.sql = "SHOW #{args[:type]}"
       else
-        dbh.go(:sql => "SHOW GLOBAL #{args[:type]}")
+        dbh.sql = "SHOW GLOBAL #{args[:type]}"
       end
-      res = dbh.fetch_hash
-      res.keys.each do |key|
-        value = res[key]
+      dbh.go
+      dbh.each_hash do |row|
+        value = row["Value"]
         if value[/^\d+$/]
           value = value.to_i
         end
-        symkey = key.split("_")
+        symkey = row["Variable_name"].split("_")
         counter = 0
         symkey.size.times do
           if counter == 0
@@ -51,7 +52,7 @@ module Mysqladmin
           end
           counter += 1
         end
-        data[symkey.join.to_sym] = res[key]
+        data[symkey.join.to_sym] = value
       end
       return data
     end

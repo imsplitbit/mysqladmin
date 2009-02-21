@@ -8,7 +8,6 @@ Mysqladmin::Pool.addConnection(:host => "localhost",
                                :user => "root",
                                :password => "password",
                                :connectionName => "local")
+foo = Mysqladmin::Logs.new(:connectionName => "local")
 
-vars = Mysqladmin::ServerInfo.serverVariables(:connectionName => "local")
-
-pp vars
+pp foo.foo
