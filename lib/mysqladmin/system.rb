@@ -10,7 +10,7 @@ module Mysqladmin
       req(:required => [:binary],
           :argsObject => args)
       
-      corefile = IO.popen("which #{args[:binary]}")
+      corefile = `which #{args[:binary]}`.strip
       unless corefile.eof?
         result = corefile.readline.strip
         corefile.close

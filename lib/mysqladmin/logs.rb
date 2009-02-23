@@ -5,7 +5,7 @@ module Mysqladmin
     include Mysqladmin::ServerInfo
     
     attr_accessor :time
-    attr_reader :binLogs, :slowLog, :genLog, :relayLog
+    attr_reader :binLogs, :slowLog, :genLog, :relayLog, :lastEntry
     
     def initialize(args={})
       req(:required => [:connectionName], :argsObject => args)
@@ -22,8 +22,8 @@ module Mysqladmin
     def parseMyCnf
       myCnfFiles = ["/etc/my.cnf", "#{@vars[:datadir]}/my.cnf"]
       myCnfFiles.each do |file|
-        if line.include?("!include")
-          myCnfFiles << line.split(" ")[1]
+        if file.include?("!include")
+          myCnfFiles << file.split(" ")[1]
         end
       end
       myCnfFiles.each do |file|
@@ -33,7 +33,7 @@ module Mysqladmin
             val = line.split("=")[1]
             if var[/log_bin/]
               Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |binLog|
-                binLogName = File.basename(binlog)
+                binLogName = File.basename(binLog)
                 @binLogs[binLogName] = {}
                 @binLogs[binLogName][:path] = binLog
               end
@@ -49,6 +49,17 @@ module Mysqladmin
               @genLog = val
             end
           end
+        end
+      end
+    end
+    
+    def listEntry(args = {})
+      req(:required => [:type, :fileName, :position], argsObject => args)
+      validTypes = [:bin, :relay]
+      if validTypes.include?(args[:type])
+        if args[:type] == :relay || args[:type] == :bin
+          @lastEntry = `#{coreReqs(:binary => "mysqladmin")} --start-position=#{args[:position]} --stop-position=#{args[:position].to_i + 1} #{args[:fileName]}`.split("\n").map{|x| x.strip}
+          @lastDb = @lastEntry.find{|x| x[/^use\ /]}.split.gsub(/\W/, "")
         end
       end
     end

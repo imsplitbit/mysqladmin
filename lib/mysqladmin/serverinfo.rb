@@ -42,19 +42,10 @@ module Mysqladmin
         if value[/^\d+$/]
           value = value.to_i
         end
-        symkey = row["Variable_name"].split("_")
-        counter = 0
-        symkey.size.times do
-          if counter == 0
-            symkey[counter] = symkey[counter].downcase
-          else
-            symkey[counter] = symkey[counter].capitalize
-          end
-          counter += 1
-        end
-        data[symkey.join.to_sym] = value
+        data[row["Variable_name"].to_sym] = value
       end
       return data
     end
+    
   end
 end
