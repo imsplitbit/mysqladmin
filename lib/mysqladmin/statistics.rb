@@ -1,5 +1,5 @@
 module Mysqladmin
-  class Storage
+  class Statistics
     include Mysqladmin::Arguments
     
     # :connectionName => The named connection to use to gather statistics on

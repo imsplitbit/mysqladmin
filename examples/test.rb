@@ -10,4 +10,5 @@ Mysqladmin::Pool.addConnection(:host => "localhost",
                                :connectionName => "local")
 foo = Mysqladmin::Logs.new(:connectionName => "local")
 
-pp foo.foo
+pp foo
+pp Mysqladmin::Pool.connections
