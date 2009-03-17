@@ -10,12 +10,10 @@ module Mysqladmin
       req(:required => [:binary],
           :argsObject => args)
       
-      corefile = `which #{args[:binary]}`.strip
-      unless corefile.eof?
-        result = corefile.readline.strip
-        corefile.close
-        result += " #{args[:cmdArgs]}" if args.has_key?(:cmdArgs)
-        return result
+      coreFile = `which #{args[:binary]}`.strip
+      if $?.exitstatus == 0
+        coreFile += " #{args[:cmdArgs]}" if args.has_key?(:cmdArgs)
+        return coreFile
       else
         raise RuntimeError, "The core requirement '#{args[:binary]}' doesn't exist in the system path!"
       end

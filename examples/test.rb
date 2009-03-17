@@ -10,5 +10,11 @@ Mysqladmin::Pool.addConnection(:host => "localhost",
                                :connectionName => "local")
 foo = Mysqladmin::Logs.new(:connectionName => "local")
 
-pp foo
-pp Mysqladmin::Pool.connections
+print foo.binaryLogs
+
+foo.listEntry(:type => :binary, :position => 3273, :fileName => "mysql-bin.000001")
+
+puts foo.lastEntry
+puts foo.lastDb
+pp foo.tables
+#pp foo
