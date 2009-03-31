@@ -80,7 +80,7 @@ module Mysqladmin
     
     def createDb(dbName)
       sql = @sql
-      query :sql = "CREATE DATABASE `#{dbName}`"
+      query :sql => "CREATE DATABASE `#{dbName}`"
       @sql = sql
     end
     
