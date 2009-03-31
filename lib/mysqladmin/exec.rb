@@ -35,6 +35,21 @@ module Mysqladmin
       end
     end
     
+    def query(args = {})
+      args[:sql] = @sql unless args.has_key?(:sql)
+      
+      # Mandatory args:
+      req(:required => [:sql],
+          :argsObject => args)
+      
+      @res = @dbh.query(cleanse(args))
+      if @res.class == Mysql::Result
+        return true
+      else
+        return false
+      end
+    end
+    
     def each_hash
       if @res
         @res.each_hash do |res|
@@ -65,8 +80,7 @@ module Mysqladmin
     
     def createDb(dbName)
       sql = @sql
-      @sql = "CREATE DATABASE `#{dbName}`"
-      go
+      query :sql = "CREATE DATABASE `#{dbName}`"
       @sql = sql
     end
     
