@@ -4,17 +4,17 @@ require "rubygems"
 require "mysqladmin"
 require "pp"
 
-Mysqladmin::Pool.addConnection(:host => "localhost",
+Mysqladmin::Pool.add_connection(:host => "localhost",
                                :user => "root",
                                :password => "password",
-                               :connectionName => "local")
-foo = Mysqladmin::Logs.new(:connectionName => "local")
+                               :connection_name => "local")
+foo = Mysqladmin::Logs.new(:connection_name => "local")
 
-print foo.binaryLogs
+print foo.binary_logs
 
-foo.listEntry(:type => :binary, :position => 3273, :fileName => "mysql-bin.000001")
+foo.list_entry(:type => :binary, :position => 3273, :file_name => "mysql-bin.000001")
 
-puts foo.lastEntry
-puts foo.lastDb
+puts foo.last_entry
+puts foo.last_db
 pp foo.tables
 #pp foo

@@ -16,7 +16,7 @@ module Mysqladmin
           :args_object => args)
       dbh = Mysqladmin::Exec.new(:connection_name => args[:connection_name],
                                  :sql => "SELECT VERSION()")
-      dbh.go
+      dbh.query
       dbh.fetch_hash["VERSION()"]
     end
     
@@ -36,7 +36,7 @@ module Mysqladmin
       else
         dbh.sql = "SHOW GLOBAL #{args[:type]}"
       end
-      dbh.go
+      dbh.query
       dbh.each_hash do |row|
         value = row["Value"]
         if value[/^\d+$/]
