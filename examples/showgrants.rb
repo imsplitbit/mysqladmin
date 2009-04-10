@@ -9,18 +9,18 @@ require "rubygems"
 require "mysqladmin"
 require "pp"
 
-Mysqladmin::Pool.addConnection(:host => "localhost",
-                               :user => "root",
-                               :password => "password",
-                               :connectionName => "local1")
+Mysqladmin::Pool.add_connection( :host => "localhost",
+                                 :user => "root",
+                                 :password => "password",
+                                 :connection_name => "local1")
 rootlocal = Mysqladmin::User.new(:user => "341448_wpsb",
-                                 :srcConnection => "local1")
-rootlocal.getGrants
-rootlocal.convGrantsToRevokes
-#rootlocal.setRevokes(:connectionName => "local1")
-rootlocal.getGrants
+                                 :src_connection => "local1")
+rootlocal.get_grants
+rootlocal.conv_grants_to_revokes
+#rootlocal.set_revokes(:connection_name => "local1")
+rootlocal.get_grants
 pp rootlocal
-rootlocal.save(:fileName => "341448user.yml")
-newObj = rootlocal.load(:fileName => "341448user.yml")
-pp newObj
-Mysqladmin::Pool.closeAllConnections
+rootlocal.save(:file_name => "341448user.yml")
+new_obj = rootlocal.load(:file_name => "341448user.yml")
+pp new_obj
+Mysqladmin::Pool.close_all_connections

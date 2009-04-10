@@ -3,22 +3,23 @@
 require "rubygems"
 require "mysqladmin"
 
-Mysqladmin::Pool.addConnection(:host => "localhost",
-                               :user => "root",
-                               :password => "password",
-                               :connectionName => "local1")
-# Mysqladmin::Pool.addConnection(:host => "localhost",
+Mysqladmin::Pool.add_connection( :host => "localhost",
+                                 :user => "root",
+                                 :password => "password",
+                                 :connection_name => "local1")
+                                 
+# Mysqladmin::Pool.add_connection(:host => "localhost",
 #                                :user => "root",
 #                                :password => "password",
-#                                :connectionName => "local2")
+#                                :connection_name => "local2")
 
 
-buJob1 = Mysqladmin::Backup.new
-buJob1.backupHost(:perTable => false,
-                  :extendedInsert => true,
-                  :srcHost => "local1")
-buJob1.restoreDbFromBackup(:srcDb => "testing",
-                           :srcHost => "local1",
-                           :destDb => "testing2",
-                           :destHost => "local1",
-                           :overwriteIfExists => true)
+bu_job1 = Mysqladmin::Backup.new
+bu_job1.backup_host( :per_table => false,
+                     :extended_insert => true,
+                     :src_host => "local1")
+bu_job1.restore_db_from_backup( :src_db => "testing",
+                                :src_host => "local1",
+                                :dest_db => "testing2",
+                                :dest_host => "local1",
+                                :overwrite_if_exists => true)

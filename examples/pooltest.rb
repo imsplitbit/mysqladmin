@@ -2,10 +2,10 @@ require "rubygems"
 require "mysqladmin"
 require "pp"
 
-Mysqladmin::Pool.addConnection(:host => "localhost",
-                               :user => "root",
-                               :password => "password",
-                               :connectionName => "local1")
+Mysqladmin::Pool.add_connection( :host => "localhost",
+                                 :user => "root",
+                                 :password => "password",
+                                 :connection_name => "local1")
 puts "BEFORE"
 pp Mysqladmin::Pool.connections
 Mysqladmin::Pool.create
