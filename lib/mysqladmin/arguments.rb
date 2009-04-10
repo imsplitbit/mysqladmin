@@ -4,10 +4,10 @@ module Mysqladmin
     # :argsObject => arg object to inspect.
     def req(args)
       args[:required].each do |req|
-        unless args[:argsObject].keys.include?(req)
+        unless args[:args_object].keys.include?(req)
           raise RuntimeError, "The required argument #{req} was not given"
         end
-        if args[:argsObject][req].nil?
+        if args[:args_object][req].nil?
           raise RuntimeError, "The required argument #{req} was nil, cannot continue"
         end
       end

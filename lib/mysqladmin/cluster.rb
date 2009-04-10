@@ -8,16 +8,16 @@ module Mysqladmin
     include Mysqladmin::Serialize
     include Mysqladmin::System
     
-    # :mgmtServer => IP or hostname of the management server
+    # :mgmt_server => IP or hostname of the management server
     def initialize(args = {})
-      @mgmtServer = args[:mgmtServer] || "localhost"
+      @mgmt_server = args[:mgmt_server] || "localhost"
       
     end
     
     # :id => Custom backup id, defaults to Time.now.strftime("%m%d%H%M")
     def startBackup(args = {})
       args[:id] = Time.now.strftime("%m%d%H%M") unless args.has_key?(:id)
-      results = `#{coreReqs(:binary => "ndb_mgm")} #{@mgmtServer} -e "START BACKUP #{args[:id]} WAIT COMPLETED"`
+      results = `#{core_reqs(:binary => "ndb_mgm")} #{@mgmt_server} -e "START BACKUP #{args[:id]} WAIT COMPLETED"`
       if results.split("\n")[3].split.last == "completed"
         true
       else

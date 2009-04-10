@@ -2,35 +2,35 @@ module Mysqladmin
   module ServerInfo
     include Mysqladmin::Arguments
     
-    # :connectionName => Name of the connection on which to run the sql
+    # :connection_name => Name of the connection on which to run the sql
     #                    "SELECT VERSION()"
-    def serverVersion(args)
+    def server_version(args)
       # Mandatory args:
-      req(:required => [:connectionName],
-          :argsObject => args)
-      longVersion(:connectionName => args[:connectionName]).split(".").map!{|x| x.gsub(/\D/, "").to_i}
+      req(:required => [:connection_name],
+          :args_object => args)
+      long_version(:connection_name => args[:connection_name]).split(".").map!{|x| x.gsub(/\D/, "").to_i}
     end
     
-    def longVersion(args)
-      req(:required => [:connectionName],
-          :argsObject => args)
-      dbh = Mysqladmin::Exec.new(:connectionName => args[:connectionName],
+    def long_version(args)
+      req(:required => [:connection_name],
+          :args_object => args)
+      dbh = Mysqladmin::Exec.new(:connection_name => args[:connection_name],
                                  :sql => "SELECT VERSION()")
       dbh.go
       dbh.fetch_hash["VERSION()"]
     end
     
-    # :connectionName => The named connection to use for database variables
-    def serverVariables(args = {})
+    # :connection_name => The named connection to use for database variables
+    def server_variables(args = {})
       args[:type] = "VARIABLES" unless args.has_key?(:type)
-      req(:required => [:connectionName], :argsObject => args)
-      validTypes = ["VARIABLES", "STATUS"]
-      unless validTypes.include?(args[:type].upcase)
+      req(:required => [:connection_name], :args_object => args)
+      valid_types = ["VARIABLES", "STATUS"]
+      unless valid_types.include?(args[:type].upcase)
         raise ArgumentError, "The type #{args[:type]} is unknown"
       end
       data = {}
-      major, minor, patch = serverVersion(:connectionName => args[:connectionName])
-      dbh = Mysqladmin::Exec.new(:connectionName => args[:connectionName])
+      major, minor, patch = server_version(:connection_name => args[:connection_name])
+      dbh = Mysqladmin::Exec.new(:connection_name => args[:connection_name])
       if major <= 4
         dbh.sql = "SHOW #{args[:type]}"
       else

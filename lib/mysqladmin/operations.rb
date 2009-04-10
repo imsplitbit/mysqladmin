@@ -3,64 +3,64 @@ module Mysqladmin
     class Table
       include Mysqladmin::Arguments
       
-      # :tableName => Name of the table to operate on,
-      # :dbName => Name of the database containing the table from :tableName,
-      # :connectionName => Name of the connection in the Pool
+      # :table_name => Name of the table to operate on,
+      # :db_name => Name of the database containing the table from :table_name,
+      # :connection_name => Name of the connection in the Pool
       def initialize(args={})
-        req(:required => [:tableName, :dbName, :connectionName],
-            :argsObject => args)
-        @tableName = args[:tableName]
-        @dbName = args[:dbName]
-        @connectionName = args[:connectionName]
-        @dbh = Mysqladmin::Exec.new(:connectionName => @connectionName)
+        req(:required => [:table_name, :db_name, :connection_name],
+            :args_object => args)
+        @table_name = args[:table_name]
+        @db_name = args[:db_name]
+        @connection_name = args[:connection_name]
+        @dbh = Mysqladmin::Exec.new(:connection_name => @connection_name)
         return true
       end
       
-      # :lockType => Type of lock to acquire on the table
+      # :lock_type => Type of lock to acquire on the table
       def lock(args={})
-        validLockTypes = ["READ", "READ LOCAL", "WRITE"]
-        if args.has_key?(:lockType)
-          unless validLockTypes.include?(args[:lockType].upcase)
+        valid_lock_types = ["READ", "READ LOCAL", "WRITE"]
+        if args.has_key?(:lock_type)
+          unless valid_lock_types.include?(args[:lock_type].upcase)
             return false
           end
         end
-        lockType = args[:lockType].upcase || "READ"
-        @dbh.use(:dbName => @dbName)
-        @dbh.go(:sql => "LOCK TABLE '#{@tableName}' #{lockType}")
+        lock_type = args[:lock_type].upcase || "READ"
+        @dbh.use(:db_name => @db_name)
+        @dbh.query(:sql => "LOCK TABLE '#{@table_name}' #{lock_type}")
         return true
       end
       
       #No arguments required because unlock doesn't take any.  Just issue on your
       #object to release all held locks.
       def unlock
-        @dbh.go(:sql => "UNLOCK TABLES")
+        @dbh.query(:sql => "UNLOCK TABLES")
         return true
       end
       
-      # :repairType => Which type of repair to do on the table
+      # :repair_type => Which type of repair to do on the table
       def repair(args={})
-        validRepairTypes = ["EXTENDED", "QUICK"]
-        if args.has_key?(:repairType)
-          unless validRepairTypes.include?(args[:repairType].upcase)
+        valid_repair_types = ["EXTENDED", "QUICK"]
+        if args.has_key?(:repair_type)
+          unless valid_repair_types.include?(args[:repair_type].upcase)
             return false
           end
         end
-        repairType = args[:repairType].upcase || "QUICK"
-        @dbh.use(:dbName => @dbName)
-        @dbh.go(:sql => "REPAIR TABLE '#{@tableName}' #{repairType}")
+        repair_type = args[:repair_type].upcase || "QUICK"
+        @dbh.use(:db_name => @db_name)
+        @dbh.query(:sql => "REPAIR TABLE '#{@table_name}' #{repair_type}")
         return true
       end
       
-      # :checkType => The type of check to run on the table
+      # :check_type => The type of check to run on the table
       def check(args={})
-        validCheckTypes = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
-        if args.has_key?(:checkType)
-          unless validCheckTypes.include?(args[:checkType].upcase)
+        valid_check_types = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
+        if args.has_key?(:check_type)
+          unless valid_check_types.include?(args[:check_type].upcase)
             return false
           end
         end
-        checkType = args[:checkType].upcase
-        @dbh.go(:sql => "CHECK TABLE '#{@tableName}' #{checkType}")
+        check_type = args[:check_type].upcase
+        @dbh.query(:sql => "CHECK TABLE '#{@table_name}' #{check_type}")
         return true
       end
     end
@@ -69,32 +69,32 @@ module Mysqladmin
       attr_accessor :repairs, :locks
       include Mysqladmin::Arguments
       
-      # :dbName => The name of the Database to operate on ,
-      # :connectionName => The host this database is on
+      # :db_name => The name of the Database to operate on ,
+      # :connection_name => The host this database is on
       def initialize(args={})
-        req(:required => [:dbName, :connectionName],
-            :argsObject => args)
+        req(:required => [:db_name, :connection_name],
+            :args_object => args)
         @locks = []
         @repairs = {}
         @checks = {}
-        @dbName = args[:dbName]
-        @connectionName = args[:connectionName]
-        @dbh = Mysqladmin::Exec.new(:connectionName => @connectionName)
+        @db_name = args[:db_name]
+        @connection_name = args[:connection_name]
+        @dbh = Mysqladmin::Exec.new(:connection_name => @connection_name)
         return true
       end
       
-      # :lockType => Type of lock to acquire on the tables of this database
+      # :lock_type => Type of lock to acquire on the tables of this database
       def lock(args={})
-        validLockTypes = ["READ", "READ LOCAL", "WRITE"]
-        if args.has_key?(:lockType)
-          unless validLockTypes.include?(args[:lockType].upcase)
+        valid_lock_types = ["READ", "READ LOCAL", "WRITE"]
+        if args.has_key?(:lock_type)
+          unless valid_lock_types.include?(args[:lock_type].upcase)
             return false
           end
         end
-        lockType = args[:lockType] || "READ"
-        @dbh.use(:dbName => @dbName)
-        @dbh.listTables.each do |table|
-          locks << Mysqladmin::Operations::Table.new(:tableName => table, :dbName => @dbName, :lockType => lockType)
+        lock_type = args[:lock_type] || "READ"
+        @dbh.use(:db_name => @db_name)
+        @dbh.list_tables.each do |table|
+          locks << Mysqladmin::Operations::Table.new(:table_name => table, :db_name => @db_name, :lock_type => lock_type)
         end
         return true
       end
@@ -108,33 +108,33 @@ module Mysqladmin
         return true
       end
       
-      # :repairType => Which type of repair to do on the tables of this database
+      # :repair_type => Which type of repair to do on the tables of this database
       def repair(args={})
-        validRepairTypes = ["EXTENDED", "QUICK"]
-        if args.has_key?(:repairType)
-          unless validRepairTypes.include?(args[:repairType].upcase)
+        valid_repair_types = ["EXTENDED", "QUICK"]
+        if args.has_key?(:repair_type)
+          unless valid_repair_types.include?(args[:repair_type].upcase)
             return false
           end
         end
-        repairType = args[:repairType].upcase
-        @dbh.use(:dbName => @dbName)
-        @dbh.listTables.each do |table|
-          @repairs[table] = Mysqladmin::Operations::Table.new(:tableName => table, :dbName => @dbName, :repairType => repairType)
+        repair_type = args[:repair_type].upcase
+        @dbh.use(:db_name => @db_name)
+        @dbh.list_tables.each do |table|
+          @repairs[table] = Mysqladmin::Operations::Table.new(:table_name => table, :db_name => @db_name, :repair_type => repair_type)
         end
         return true
       end
       
-      # :checkType => The type of check to run on the tables of this database
+      # :check_type => The type of check to run on the tables of this database
       def check(args={})
-        validCheckTypes = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
-        if args.has_key?(:checkType)
-          unless validCheckTypes.include?(args[:checkType].upcase)
+        valid_check_types = ["FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED", "CHANGED"]
+        if args.has_key?(:check_type)
+          unless valid_check_types.include?(args[:check_type].upcase)
             return false
           end
         end
-        checkType = args[:checkType].upcase
-        @dbh.use(:dbName => @dbName)
-        @dbh.listTables.each do |table|
+        check_type = args[:check_type].upcase
+        @dbh.use(:db_name => @db_name)
+        @dbh.list_tables.each do |table|
           
         end
       end

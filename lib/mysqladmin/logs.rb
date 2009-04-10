@@ -5,33 +5,33 @@ module Mysqladmin
     include Mysqladmin::ServerInfo
     
     attr_accessor :time
-    attr_reader :binaryLogs, :slowLog, :genLog, :relayLog, :lastEntry, :lastDb, :tables
+    attr_reader :binary_logs, :slow_log, :general_log, :relay_log, :last_entry, :last_db, :tables
     
     def initialize(args={})
-      req(:required => [:connectionName], :argsObject => args)
+      req(:required => [:connection_name], :args_object => args)
       @start = Time.now
-      @binaryLogs = {}
-      @slowLog = nil
-      @generalLog = nil
-      @relayLogs = {}
+      @binary_logs = {}
+      @slow_log = nil
+      @general_log = nil
+      @relay_logs = {}
       @tables = []
-      @vars = serverVariables(:connectionName => args[:connectionName], :type => "variables")
-      @status = serverVariables(:connectionName => args[:connectionName], :type => "status")
-      parseMyCnf
+      @vars = serverVariables(:connection_name => args[:connection_name], :type => "variables")
+      @status = serverVariables(:connection_name => args[:connection_name], :type => "status")
+      parse_my_cnf
     end
     
-    def parseMyCnf
-      myCnfFiles = ["/etc/my.cnf", "#{@vars[:datadir]}my.cnf"]
-      myCnfFiles.each do |file|
+    def parse_my_cnf
+      my_cnf_files = ["/etc/my.cnf", "#{@vars[:datadir]}my.cnf"]
+      my_cnf_files.each do |file|
         if File.exist?(file)
           File.readlines(file).each do |line|
             if line.include?("!include")
-              myCnfFiles << file.split(" ")[1].strip
+              my_cnf_files << file.split(" ")[1].strip
             end
           end
         end
       end
-      myCnfFiles.each do |file|
+      my_cnf_files.each do |file|
         if File.exist?(file)
           File.readlines(file).each do |line|
             if line.include?("=")
@@ -39,20 +39,20 @@ module Mysqladmin
               val = line.split("=")[1].strip
               if var[/^log_bin$/i]
                 Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |binLog|
-                  binLogName = File.basename(binLog)
-                  @binaryLogs[binLogName] = {}
-                  @binaryLogs[binLogName][:path] = binLog
+                  bin_log_name = File.basename(binLog)
+                  @binary_logs[bin_log_name] = {}
+                  @binary_logs[bin_log_name][:path] = binLog
                 end
               elsif var[/^relay_log$/i]
-                Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |relayLog|
-                  relayLogName = File.basename(relayLog)
-                  @relayLogs[relayLog] = {}
-                  @relayLogs[relayLog][:path] = relayLog
+                Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |relay_log|
+                  relay_logName = File.basename(relay_log)
+                  @relay_logs[relay_log] = {}
+                  @relay_logs[relay_log][:path] = relay_log
                 end
               elsif var[/^log_slow_queries$/i]
-                @slowLog = val
+                @slow_log = val
               elsif var[/^log$/i]
-                @generalLog = val
+                @general_log = val
               end
             end
           end
@@ -60,24 +60,24 @@ module Mysqladmin
       end
     end
     
-    def listEntry(args = {})
-      req(:required => [:type, :fileName, :position], :argsObject => args)
-      validTypes = [:binary, :relay]
-      if validTypes.include?(args[:type])
+    def list_entry(args = {})
+      req(:required => [:type, :file_name, :position], :args_object => args)
+      valid_types = [:binary, :relay]
+      if valid_types.include?(args[:type])
         if args[:type] == :relay 
-          logFile = @relayLogs[args[:fileName]][:path]
+          log_file = @relay_logs[args[:file_name]][:path]
         elsif args[:type] == :binary
-          logFile = @binaryLogs[args[:fileName]][:path]
+          log_file = @binary_logs[args[:file_name]][:path]
         end
         
-        @lastEntry = `#{coreReqs(:binary => "/usr/local/mysql/bin/mysqlbinlogs")} --start-position=#{args[:position]} --stop-position=#{args[:position].to_i + 1} #{args[:fileName]}`.split(";").map{|x| x.strip}
-        @lastEntry.each do |entry|
-          dbName = entry.match(/use (.+)/i)
-          unless dbName == nil
-            @lastDb = dbName[1]
+        @last_entry = `#{core_reqs(:binary => "/usr/local/mysql/bin/mysqlbinlogs")} --start-position=#{args[:position]} --stop-position=#{args[:position].to_i + 1} #{args[:file_name]}`.split(";").map{|x| x.strip}
+        @last_entry.each do |entry|
+          db_name = entry.match(/use (.+)/i)
+          unless db_name == nil
+            @last_db = db_name[1]
           end
         end
-        @lastEntry.each do |entry|
+        @last_entry.each do |entry|
           entry = entry.gsub("\n", "").gsub(/\s+/, " ")
           if entry[/^insert/i]
             x = entry.match(/into (.+?)(value|\(| )/i)

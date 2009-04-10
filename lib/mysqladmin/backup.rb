@@ -10,284 +10,284 @@ module Mysqladmin
     include Mysqladmin::System
     include Mysqladmin::ServerInfo
     
-    attr_accessor :textFilter
-    attr_reader :taskResults
+    attr_accessor :text_filter
+    attr_reader :task_results
     
-    # :srcHost => Host you wish to perform backups on,
-    # :srcDb => Name of the database you wish to backup,
-    # :srcPool => Name of the pool on which you wish to operate,
-    # :destHost => Server on which to apply mysqldump files,
-    # :textFilter => Usually would be a sed command to change data as it is streamed to gzip,
-    # :perTable => Use if you want your backups to be done on a per table basis,
-    # :onlyTheseTables => Use if you want to backup tables that match the names in this list,
-    # :timeStamp => true/false do you want a timestap to precede the dbname/tablename in your
+    # :src_host => Host you wish to perform backups on,
+    # :src_db => Name of the database you wish to backup,
+    # :src_pool => Name of the pool on which you wish to operate,
+    # :dest_host => Server on which to apply mysqldump files,
+    # :text_filter => Usually would be a sed command to change data as it is streamed to gzip,
+    # :per_table => Use if you want your backups to be done on a per table basis,
+    # :only_these_tables => Use if you want to backup tables that match the names in this list,
+    # :time_stamp => true/false do you want a timestap to precede the db_name/table_name in your
     #               backup files,
     # :debug => Set to true to ouput all actions to stdout
     def initialize(args = {})
-      @srcHost = args[:srcHost] || nil
-      @srcDb = args[:srcDb] || nil
-      @srcPool = args[:srcPool] || nil
-      @destHost = args[:destHost] || nil
-      @perTable = args[:perTable] || nil
-      @onlyTheseTables = args[:onlyTheseTables] || nil
-      @extendedInsert = args[:extendedInsert] || nil
-      @timeStamp = args[:timeStamp] || nil
-      @textFilter = args[:textFilter] || nil
+      @src_host = args[:src_host] || nil
+      @src_db = args[:src_db] || nil
+      @src_pool = args[:src_pool] || nil
+      @dest_host = args[:dest_host] || nil
+      @per_table = args[:per_table] || nil
+      @only_these_tables = args[:only_these_tables] || nil
+      @extended_insert = args[:extended_insert] || nil
+      @time_stamp = args[:time_stamp] || nil
+      @text_filter = args[:text_filter] || nil
       @debug = args[:debug] || false
-      @taskResults = {}
+      @task_results = {}
     end
     
     # We need a way of finding backups, just in case we have 1500 of them listed
-    # in our @taskResults hash and we bumbleheaded the location or just plain
+    # in our @task_results hash and we bumbleheaded the location or just plain
     # can't remember.
     def find(args)
       raise RuntimeError, "Method not implemented"
     end
     
-    # :srcDb => "Dbname to backup",
-    # :srcHost => Server to connect to in order to get the backup of :srcDb,
-    # :perTable => true to get a perTable table backup,
-    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    def backupDb(args = {})
+    # :src_db => "db_name to backup",
+    # :src_host => Server to connect to in order to get the backup of :src_db,
+    # :per_table => true to get a per_table table backup,
+    # :only_these_tables => An array of table_names you wish to limit your backups to,
+    # :text_filter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extended_insert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :time_stamp => Prepend the backup with a time_stamp in the format of "YYYYMMDD-HHMM"
+    def backup_db(args = {})
       # Set all values in args if there are instance values set, args keys have
       # precidence.
-      args[:perTable] = @perTable unless args.has_key?(:perTable)
-      args[:onlyTheseTables] = @onlyTheseTables unless args.has_key?(:onlyTheseTables)
-      args[:extendedInsert] = @extendedInsert unless args.has_key?(:extendedInsert)
-      args[:timeStamp] = @timeStamp unless args.has_key?(:timeStamp)
-      args[:srcDb] = @srcDb unless args.has_key?(:srcDb)
-      args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
-      args[:textFilter] = @textFilter unless args.has_key?(:textFilter)
+      args[:per_table] = @per_table unless args.has_key?(:per_table)
+      args[:only_these_tables] = @only_these_tables unless args.has_key?(:only_these_tables)
+      args[:extended_insert] = @extended_insert unless args.has_key?(:extended_insert)
+      args[:time_stamp] = @time_stamp unless args.has_key?(:time_stamp)
+      args[:src_db] = @src_db unless args.has_key?(:src_db)
+      args[:src_host] = @src_host unless args.has_key?(:src_host)
+      args[:text_filter] = @text_filter unless args.has_key?(:text_filter)
       args[:task] = :backup unless args.has_key?(:backup)
       
       # Mandatory args:
-      req(:required => [:perTable,
-                        :srcDb,
-                        :srcHost,
+      req(:required => [:per_table,
+                        :src_db,
+                        :src_host,
                         :task],
-          :argsObject => args)
+          :args_object => args)
 
       # Store backup results in this returned hash so logging can be done if you
       # care to do that.
-      @taskResults[args[:srcHost]] = {} unless @taskResults.has_key?(args[:srcHost])
-      @taskResults[args[:srcHost]][args[:srcDb]] = {} unless @taskResults[args[:srcHost]].has_key?(args[:srcDb])
-      @taskResults[args[:srcHost]][args[:srcDb]][:backupFiles] = [] unless @taskResults[args[:srcHost]][args[:srcDb]].has_key?(:backupFiles)
-      @taskResults[args[:srcHost]][args[:srcDb]][:backupResultLog] = {} unless @taskResults[args[:srcHost]][args[:srcDb]].has_key?(:backupResultLog)
+      @task_results[args[:src_host]] = {} unless @task_results.has_key?(args[:src_host])
+      @task_results[args[:src_host]][args[:src_db]] = {} unless @task_results[args[:src_host]].has_key?(args[:src_db])
+      @task_results[args[:src_host]][args[:src_db]][:backup_files] = [] unless @task_results[args[:src_host]][args[:src_db]].has_key?(:backup_files)
+      @task_results[args[:src_host]][args[:src_db]][:backup_result_log] = {} unless @task_results[args[:src_host]][args[:src_db]].has_key?(:backup_result_log)
       
       # Set the backup type, this is used later in the restore process to make sure
       # we don't try to iterate through a string.  This can be done about a
       # hundred ways, I know, but I like to err on the side of verbosity.
-      @taskResults[args[:srcHost]][args[:srcDb]][:type] = case args[:perTable]
+      @task_results[args[:src_host]][args[:src_db]][:type] = case args[:per_table]
       when nil || false then :full
-      when true then :perTable
+      when true then :per_table
       end
       
       # Get server version so as to be able to do server specific commands
-      majorVers, minorVers, patchVers = serverVersion(:connectionName => args[:srcHost])
+      major_version, minor_version, patch_versions = server_version(:connection_name => args[:src_host])
       
       # Username and Ip are stored for persistence in the pool hash
-      args[:user] = Mysqladmin::Pool.connections[args[:srcHost]][:user]
-      args[:srcIp] = Mysqladmin::Pool.connections[args[:srcHost]][:host]
+      args[:user] = Mysqladmin::Pool.connections[args[:src_host]][:user]
+      args[:src_ip] = Mysqladmin::Pool.connections[args[:src_host]][:host]
       
       # If a password is used, append that to the mysqldump command in proper
       # format for mysqldump.  i.e. -pmysouperseekrit
-      if Mysqladmin::Pool.connections[args[:srcHost]][:password].length > 0
-        args[:password] = "-p#{Mysqladmin::Pool.connections[args[:srcHost]][:password]}"
+      if Mysqladmin::Pool.connections[args[:src_host]][:password].length > 0
+        args[:password] = "-p#{Mysqladmin::Pool.connections[args[:src_host]][:password]}"
       end
       
       # Specific to mysql versions >= 5, dump stored procedures and triggers
-      if majorVers >= 5
-        args[:procsAndTriggers] = "--routines --triggers"
+      if major_version >= 5
+        args[:procs_and_triggers] = "--routines --triggers"
       else
-        args[:procsAndTriggers] = ""
+        args[:procs_and_triggers] = ""
       end
       
       # If a text filter is provided mangle it into a pipe
-      if args[:textFilter]
-        args[:textFilter] = "| #{args[:textFilter]}"
+      if args[:text_filter]
+        args[:text_filter] = "| #{args[:text_filter]}"
       end
       
       # Enable/Disable extended insert.  My preference is to disable extended
       # inserts as more times than not, when restoring a multi-gig database
       # a failure will occur and you have no recourse other than to drop and try
       # again and again and again
-      unless args[:extendedInsert]
-        args[:extendedInsert] = "--skip-extended-insert"
+      unless args[:extended_insert]
+        args[:extended_insert] = "--skip-extended-insert"
       else
-        args[:extendedInsert] = ""
+        args[:extended_insert] = ""
       end
       
-      if args[:perTable]
+      if args[:per_table]
         # If we are doing per table backups, i.e. the smart way to do backups IMHO,
         # we need to get a list of tables for our database.
-        dbh = Mysqladmin::Exec.new(:connectionName => args[:srcHost])
-        dbh.use(args[:srcDb])
-        dbh.listTables.each do |tableName|
-          if args[:onlyTheseTables].class == Array
-            if args[:onlyTheseTables].include?(tableName)
-              args[:tableName] = tableName
-              doBackup(args)
-              args.delete(:tableName) if args.has_key?(:tableName)
+        dbh = Mysqladmin::Exec.new(:connection_name => args[:src_host])
+        dbh.use(args[:src_db])
+        dbh.list_tables.each do |table_name|
+          if args[:only_these_tables].class == Array
+            if args[:only_these_tables].include?(table_name)
+              args[:table_name] = table_name
+              do_backup(args)
+              args.delete(:table_name) if args.has_key?(:table_name)
               args.delete(:status) if args.has_key?(:status)
             end
           else
-            args[:tableName] = tableName
-            doBackup(args)
-            args.delete(:tableName) if args.has_key?(:tableName)
+            args[:table_name] = table_name
+            do_backup(args)
+            args.delete(:table_name) if args.has_key?(:table_name)
             args.delete(:status) if args.has_key?(:status)
           end
         end
       else
-        args.delete(:tableName) if args.has_key?(:tableName)
-        doBackup(args)
+        args.delete(:table_name) if args.has_key?(:table_name)
+        do_backup(args)
         args.delete(:status) if args.has_key?(:status)
       end
     end
     
-    # :srcHost => Host to backup,
-    # :perTable => true to get a perTable table backup,
-    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    def backupHost(args)
-      req(:required => [:srcHost],
-          :argsObject => args)
-      args[:perTable] = @perTable unless args.has_key?(:perTable)
-      args[:onlyTheseTables] = @onlyTheseTables unless args.has_key?(:onlyTheseTables)
-      args[:textFilter] = @textFilter unless args.has_key?(:textFilter)
-      args[:extendedInsert] = @extendedInsert unless args.has_key?(:extendedInsert)
-      args[:timeStamp] = @timeStamp unless args.has_key?(:timeStamp)
+    # :src_host => Host to backup,
+    # :per_table => true to get a per_table table backup,
+    # :only_these_tables => An array of table_names you wish to limit your backups to,
+    # :text_filter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extended_insert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :time_stamp => Prepend the backup with a time_stamp in the format of "YYYYMMDD-HHMM"
+    def backup_host(args)
+      req(:required => [:src_host],
+          :args_object => args)
+      args[:per_table] = @per_table unless args.has_key?(:per_table)
+      args[:only_these_tables] = @only_these_tables unless args.has_key?(:only_these_tables)
+      args[:text_filter] = @text_filter unless args.has_key?(:text_filter)
+      args[:extended_insert] = @extended_insert unless args.has_key?(:extended_insert)
+      args[:time_stamp] = @time_stamp unless args.has_key?(:time_stamp)
       
-      # first thing we need to do is get a list of databases on :srcHost
-      dbh = Mysqladmin::Exec.new(:connectionName => args[:srcHost])
-      databases = dbh.listDbs
+      # first thing we need to do is get a list of databases on :src_host
+      dbh = Mysqladmin::Exec.new(:connection_name => args[:src_host])
+      databases = dbh.list_dbs
       
       # As long as the databases array is not empty, backup all databases
       unless databases.empty?
         
         # Remove lost+found directory if it shows up in the db list
         # this will break backups
-        databases.delete_if{|x| ["lost\+found", "information_schema"].include?(x) }.each do |dbName|
+        databases.delete_if{|x| ["lost\+found", "information_schema"].include?(x) }.each do |db_name|
           
           # set the database name to the db we want to backup
-          args[:srcDb] = dbName
-          backupDb(args)
+          args[:src_db] = db_name
+          backup_db(args)
           
           # flush the database name out of our args hash so we don't have the
           # chance of collisions or dupes
-          args.delete(:srcDb)
+          args.delete(:src_db)
         end
       end
     end
     
-    # :srcPool => Pool to backup,
-    # :threadPoolSize => Number of threads to spawn for the pool operations, default is 40.
-    # :perTable => true to get a perTable table backup,
-    # :onlyTheseTables => An array of tablenames you wish to limit your backups to,
-    # :textFilter => Ususally would be a "sed" command to change data as it is streamed to gzip,
-    # :extendedInsert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
-    # :timeStamp => Prepend the backup with a timestamp in the format of "YYYYMMDD-HHMM"
-    def backupPool(args)
-      req(:required => [:srcPool],
-          :argsObject => args)
-      args[:threadPoolSize] = 40 unless args.has_key?(:threadPoolSize)
-      args[:perTable] = @perTable unless args.has_key?(:perTable)
-      args[:onlyTheseTables] = @onlyTheseTables unless args.has_key?(:onlyTheseTables)
-      args[:textFilter] = @textFilter unless args.has_key?(:textFilter)
-      args[:extendedInsert] = @extendedInsert unless args.has_key?(:extendedInsert)
-      args[:timeStamp] = @timeStamp unless args.has_key?(:timeStamp)
+    # :src_pool => Pool to backup,
+    # :thread_pool_size => Number of threads to spawn for the pool operations, default is 40.
+    # :per_table => true to get a per_table table backup,
+    # :only_these_tables => An array of table_names you wish to limit your backups to,
+    # :text_filter => Ususally would be a "sed" command to change data as it is streamed to gzip,
+    # :extended_insert => Set to true to enable multi-row inserts.  This will make backups faster but make mid-restore errors harder to trace and fix.,
+    # :time_stamp => Prepend the backup with a time_stamp in the format of "YYYYMMDD-HHMM"
+    def backup_pool(args)
+      req(:required => [:src_pool],
+          :args_object => args)
+      args[:thread_pool_size] = 40 unless args.has_key?(:thread_pool_size)
+      args[:per_table] = @per_table unless args.has_key?(:per_table)
+      args[:only_these_tables] = @only_these_tables unless args.has_key?(:only_these_tables)
+      args[:text_filter] = @text_filter unless args.has_key?(:text_filter)
+      args[:extended_insert] = @extended_insert unless args.has_key?(:extended_insert)
+      args[:time_stamp] = @time_stamp unless args.has_key?(:time_stamp)
       
       # Create our threadpool
-      pool = ThreadPool.new(args[:threadPoolSize])
+      pool = ThreadPool.new(args[:thread_pool_size])
       
       # iterate through the list of connections in the Array of connection names
-      Mysqladmin::Pool.connectionPools[args[:srcPool]].each do |srcHost|
+      Mysqladmin::Pool.connection_pools[args[:src_pool]].each do |src_host|
         
-        # Set :srcHost in args and pass to backupHost
-        args[:srcHost] = srcHost
-        pool.process { backupHost(args) }
+        # Set :src_host in args and pass to backup_host
+        args[:src_host] = src_host
+        pool.process { backup_host(args) }
         
-        # Remove :srcHost to avoid collisions and backing up the same host twice
-        args.delete(:srcHost)
+        # Remove :src_host to avoid collisions and backing up the same host twice
+        args.delete(:src_host)
       end
       
       # Wait for all jobs in the pool to finish
       pool.join
     end
     
-    # :srcDb => Database name that is being restored,
-    # :srcHost => Host the backups were run on,
-    # :destHost => Name of the host we want to restore to,
-    # :destDb => Name of the database you want to restore to,
-    # :textFilter => Any bash run-able command that will filter text.
+    # :src_db => Database name that is being restored,
+    # :src_host => Host the backups were run on,
+    # :dest_host => Name of the host we want to restore to,
+    # :dest_db => Name of the database you want to restore to,
+    # :text_filter => Any bash run-able command that will filter text.
     #                i.e. sed -e s/foo/bar/g,
-    # :backupFiles => files to restore from, if you aren't working from a
+    # :backup_files => files to restore from, if you aren't working from a
     #                 serialzed object,
-    # :backupFileFormat => Assumed gzip compressed, we will check to be sure
+    # :backup_file_format => Assumed gzip compressed, we will check to be sure
     #                      regardless, if file ends in .sql it is assumed
     #                      clear text.  If the file ends in .gz or .tgz it is
     #                      assumed compressed text.  We will add more options
     #                      when gzip sucks worse than other things. Perhaps bzip?
     #                      mixed format, i.e. .sql and .gz is not permitted
     #                      just now.  Will allow that later.
-    # :crashIfExists => Set to true if you want to raise an exception if
+    # :crash_if_exists => Set to true if you want to raise an exception if
     #                   targets already exist, Defaults to false.
-    # :overwriteIfExists => Set to true if you want to overwrite the :destDb
+    # :overwrite_if_exists => Set to true if you want to overwrite the :dest_db
     #                       with all new data, we won't be dropping the db to
     #                       create it fresh but any tables that are there will
     #                       be overwritten by the restore.
-    def restoreDbFromBackup(args = {})
+    def restore_db_from_backup(args = {})
       # We need to get our list of files to restore from based on the database name
       # and the host it was backed up from.
-      args[:srcDb] = @srcDb unless args.has_key?(:srcDb)
-      args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
-      args[:backupFiles] = @taskResults[args[:srcHost]][args[:srcDb]][:backupFiles] unless args.has_key?(:backupFiles)
-      args[:perTable] = @taskResults[args[:srcHost]][args[:srcDb]][:type] == :perTable ? true : false
+      args[:src_db] = @src_db unless args.has_key?(:src_db)
+      args[:src_host] = @src_host unless args.has_key?(:src_host)
+      args[:backup_files] = @task_results[args[:src_host]][args[:src_db]][:backup_files] unless args.has_key?(:backup_files)
+      args[:per_table] = @task_results[args[:src_host]][args[:src_db]][:type] == :per_table ? true : false
       
-      # Set args[:destDb] to args[:srcDb] if we haven't received a name for it
-      args[:destDb] = args[:srcDb] unless args.has_key?(:destDb)
+      # Set args[:dest_db] to args[:src_db] if we haven't received a name for it
+      args[:dest_db] = args[:src_db] unless args.has_key?(:dest_db)
       
       # Return to normal operations
-      args.has_key?(:textFilter) ? @textFilter = args[:textFilter] : args[:textFilter] = @textFilter
-      args.has_key?(:destHost) ? @destHost = args[:destHost] : args[:destHost] = @destHost
-      args[:crashIfExists] = false unless args.has_key?(:crashIfExists)
-      args[:overwriteIfExists] = false unless args.has_key?(:overwriteIfExists)
-      args[:user] = Mysqladmin::Pool.connections[args[:destHost]][:user] unless args.has_key?(:user)
-      args[:password] = Mysqladmin::Pool.connections[args[:destHost]][:password] unless args.has_key?(:password)
-      args[:destIp] = Mysqladmin::Pool.connections[args[:destHost]][:host] unless args.has_key?(:destIp)
+      args.has_key?(:text_filter) ? @text_filter = args[:text_filter] : args[:text_filter] = @text_filter
+      args.has_key?(:dest_host) ? @dest_host = args[:dest_host] : args[:dest_host] = @dest_host
+      args[:crash_if_exists] = false unless args.has_key?(:crash_if_exists)
+      args[:overwrite_if_exists] = false unless args.has_key?(:overwrite_if_exists)
+      args[:user] = Mysqladmin::Pool.connections[args[:dest_host]][:user] unless args.has_key?(:user)
+      args[:password] = Mysqladmin::Pool.connections[args[:dest_host]][:password] unless args.has_key?(:password)
+      args[:dest_ip] = Mysqladmin::Pool.connections[args[:dest_host]][:host] unless args.has_key?(:dest_ip)
       
       # Mandatory options:
-      req(:required => [:srcDb,
-                        :srcHost,
-                        :backupFiles,
-                        :perTable,
-                        :destDb,
-                        :destHost,
+      req(:required => [:src_db,
+                        :src_host,
+                        :backup_files,
+                        :per_table,
+                        :dest_db,
+                        :dest_host,
                         :user,
                         :password,
-                        :destIp],
-          :argsObject => args)
+                        :dest_ip],
+          :args_object => args)
 
-      # Delete args[:srcDb] and args[:srcHost] so we don't have collisions later.
-      args.delete(:srcDb) if args.has_key?(:srcDb)
-      args.delete(:srcHost) if args.has_key?(:srcHost)
+      # Delete args[:src_db] and args[:src_host] so we don't have collisions later.
+      args.delete(:src_db) if args.has_key?(:src_db)
+      args.delete(:src_host) if args.has_key?(:src_host)
       
       # Create our logging space if it doesn't already exist
-      @taskResults[args[:destHost]] = {} unless @taskResults.has_key?(args[:destHost])
-      @taskResults[args[:destHost]][args[:destDb]] = {} unless @taskResults[args[:destHost]].has_key?(args[:destDb])
-      @taskResults[args[:destHost]][args[:destDb]][:restoreFiles] = [] unless @taskResults[args[:destHost]][args[:destDb]].has_key?(:restoreFiles)
-      @taskResults[args[:destHost]][args[:destDb]][:restoreResultLog] = {} unless @taskResults[args[:destHost]][args[:destDb]].has_key?(:restoreResultLog)
+      @task_results[args[:dest_host]] = {} unless @task_results.has_key?(args[:dest_host])
+      @task_results[args[:dest_host]][args[:dest_db]] = {} unless @task_results[args[:dest_host]].has_key?(args[:dest_db])
+      @task_results[args[:dest_host]][args[:dest_db]][:restore_files] = [] unless @task_results[args[:dest_host]][args[:dest_db]].has_key?(:restore_files)
+      @task_results[args[:dest_host]][args[:dest_db]][:restore_result_log] = {} unless @task_results[args[:dest_host]][args[:dest_db]].has_key?(:restore_result_log)
       
       # If a text filter is provided mangle it into a pipe
-      if args[:textFilter]
-        args[:textFilter] = "| #{args[:textFilter]}"
+      if args[:text_filter]
+        args[:text_filter] = "| #{args[:text_filter]}"
       end
       
-      args[:backupFiles].each do |buFile|
+      args[:backup_files].each do |buFile|
         # Make sure the backup files exist in the path or crash
         unless File.file?(buFile)
           raise RuntimeError, "Backup file #{buFile} is not in path or cwd"
@@ -295,75 +295,75 @@ module Mysqladmin
         # analyze the files and make sure we can figure out how to concatenate
         # them to the mysql command for restoration
         if buFile[/^.*\.sql$/]
-          args[:backupFileFormat] = :text
+          args[:backup_file_format] = :text
         elsif buFile[/^.*\.[t]*gz$/]
-          args[:backupFileFormat] = :gzip
+          args[:backup_file_format] = :gzip
         else
-          raise RuntimeError, "No supported backupFileFormat matched"
+          raise RuntimeError, "No supported backup_file_format matched"
         end
       end
       
       # Make sure the backup files exist in the path or crash
       
-      # See if the target database exists and follow conditions for :crashIfExists
-      # and :overwriteIfExists
-      dbh = Mysqladmin::Exec.new(:connectionName => args[:destHost],
-                                 :sql => "SHOW DATABASES LIKE '#{args[:destDb]}'")
+      # See if the target database exists and follow conditions for :crash_if_exists
+      # and :overwrite_if_exists
+      dbh = Mysqladmin::Exec.new(:connection_name => args[:dest_host],
+                                 :sql => "SHOW DATABASES LIKE '#{args[:dest_db]}'")
       dbh.go
       if dbh.rows > 0
-        if dbh.fetch_hash["Database (#{args[:destDb]})"] == args[:destDb]
-          if args[:crashIfExists] == true
-            raise RuntimeError, "Database #{args[:destDb]} exists on #{args[:destHost]}"
-          elsif args[:overwriteIfExists] == true
+        if dbh.fetch_hash["Database (#{args[:dest_db]})"] == args[:dest_db]
+          if args[:crash_if_exists] == true
+            raise RuntimeError, "Database #{args[:dest_db]} exists on #{args[:dest_host]}"
+          elsif args[:overwrite_if_exists] == true
             doRestore(args)
           else
             false
           end
         end
       else
-        dbh.createDb(args[:destDb])
+        dbh.createDb(args[:dest_db])
         doRestore(args)
       end
       
       # Flush 
-      args.delete(:crashIfExists) if args.has_key?(:crashIfExists)
-      args.delete(:overwriteIfExists) if args.has_key?(:overwriteIfExists)
+      args.delete(:crash_if_exists) if args.has_key?(:crash_if_exists)
+      args.delete(:overwrite_if_exists) if args.has_key?(:overwrite_if_exists)
     end
     
-    # :srcHost => Host to check backup success,
-    # :srcDb => Db to check backups.
+    # :src_host => Host to check backup success,
+    # :src_db => Db to check backups.
     # :task => :backup/:restore
     def success?(args = {})
-      args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
-      args[:srcDb] = @srcDb unless args.has_key?(:srcDb)
+      args[:src_host] = @src_host unless args.has_key?(:src_host)
+      args[:src_db] = @src_db unless args.has_key?(:src_db)
       
-      req(:required => [:srcHost, :srcDb, :task],
-          :argsObject => args)
+      req(:required => [:src_host, :src_db, :task],
+          :args_object => args)
           
-      if @taskResults[args[:srcHost]][args[:srcDb]]["#{args[:task].to_s}ResultLog".to_sym].class == Hash
-        @taskResults[args[:srcHost]][args[:srcDb]]["#{args[:task].to_s}ResultLog".to_sym].each do |tableName, backupResult|
+      if @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym].class == Hash
+        @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym].each do |table_name, backupResult|
           if backupResult == false
             return false
           end
         end
       else
-        return @taskResults[args[:srcHost]][args[:srcDb]]["#{args[:task].to_s}ResultLog".to_sym]
+        return @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym]
       end
     end
     
     private
     
-    # :srcHost => Name of the host we are operating on right now, used purely for
+    # :src_host => Name of the host we are operating on right now, used purely for
     #             storing the resulting data.  This is because we don't want to
     #             implement a pure ruby mysqldump as mysqldump is going to do the
     #             best job backing up our dbs.  Yay MySQL Programmers!  You are
     #             *WAY* smarter than I am.,
-    # :srcDb => The name of the database which is being backed up from on :srcHost,
-    # :perTable => If true then the :resultLog will contain a list of tables and
+    # :src_db => The name of the database which is being backed up from on :src_host,
+    # :per_table => If true then the :result_log will contain a list of tables and
     #              the results of their backups,
-    # :tableName => If :perTable is true then we need this to populate the
-    #               :resultLog hash.
-    def checkExitCode(args)
+    # :table_name => If :per_table is true then we need this to populate the
+    #               :result_log hash.
+    def check_exit_code(args)
       if $?.exitstatus == 0
         args[:status] = true
       else
@@ -374,115 +374,114 @@ module Mysqladmin
     
     # :task => :backup/:restore
     # *if :task => :backup*
-    # :srcDb => Name of the database we are backing up,
-    # :srcHost => Host from which we are taking the backup,
+    # :src_db => Name of the database we are backing up,
+    # :src_host => Host from which we are taking the backup,
     # :status => true/false, The status of the last run commandline command,
-    # :perTable => true/false, Were the backups run on a pertable basis.
-    #              *requires :tableName*,
-    # :tableName => Name of the table being operated on. *requires :perTable*,
+    # :per_table => true/false, Were the backups run on a per_table basis.
+    #              *requires :table_name*,
+    # :table_name => Name of the table being operated on. *requires :per_table*,
     # *elsif :task => :restore*
     # :status => true/false, The status of the last run commandline command,
-    # :perTable => true/false, Were the backups run on a pertable basis.
-    #              *requires :tableName*,
-    # :destDb => Name of the database we are restoring to,
-    # :destHost => Host we are restoring :destDb to,
-    # :backupFile => File we are attempting to restore from.  *requires :task => :restore*,
-    def updateTaskResults(args)
+    # :per_table => true/false, Were the backups run on a per_table basis.
+    #              *requires :table_name*,
+    # :dest_db => Name of the database we are restoring to,
+    # :dest_host => Host we are restoring :dest_db to,
+    # :backup_file => File we are attempting to restore from.  *requires :task => :restore*,
+    def updatetask_results(args)
       if args[:task] == :backup
-        req(:required => [:srcDb,
-                          :srcHost,
+        req(:required => [:src_db,
+                          :src_host,
                           :status],
-            :argsObject => args)
-        if args[:perTable]
-          @taskResults[args[:srcHost]][args[:srcDb]][:backupResultLog][args[:tableName]] = args[:status]
+            :args_object => args)
+        if args[:per_table]
+          @task_results[args[:src_host]][args[:src_db]][:backup_result_log][args[:table_name]] = args[:status]
         else
-          @taskResults[args[:srcHost]][args[:srcDb]][:backupResultLog] = args[:status]
+          @task_results[args[:src_host]][args[:src_db]][:backup_result_log] = args[:status]
         end
       elsif args[:task] == :restore
-        req(:required => [:destDb,
-                          :destHost,
+        req(:required => [:dest_db,
+                          :dest_host,
                           :status,
-                          :backupFile],
-            :argsObject => args)
-        if args[:perTable]
-          @taskResults[args[:destHost]][args[:destDb]][:restoreResultLog][args[:backupFile]] = args[:status]
+                          :backup_file],
+            :args_object => args)
+        if args[:per_table]
+          @task_results[args[:dest_host]][args[:dest_db]][:restore_result_log][args[:backup_file]] = args[:status]
         else
-          @taskResults[args[:destHost]][args[:destDb]][:restoreResultLog] = args[:status]
+          @task_results[args[:dest_host]][args[:dest_db]][:restore_result_log] = args[:status]
         end
       else
         raise RuntimeError, "args[:task] was not passed to the task"
       end
     end
     
-    # :srcDb => Db to backup from,
-    # :srcHost => Name of the connection in the connection manager i.e. Mysqladmin::Pool,
-    # :srcIp => IP Address for :srcHost,
-    # :user => User to connect to :srcIp as,
-    # :password => Password to authenticate with for :user on :srcIp,
-    # :procsAndTriggers => String to append to mysqldump to backup stored procedures and triggers for :srcDb,
-    # :extendedInsert => String to append to mysqldump to allow for or eliminate multi-row inserts,
-    # :tableName => Table to backup from :srcDb, required if this is a perTable
+    # :src_db => Db to backup from,
+    # :src_host => Name of the connection in the connection manager i.e. Mysqladmin::Pool,
+    # :src_ip => IP Address for :src_host,
+    # :user => User to connect to :src_ip as,
+    # :password => Password to authenticate with for :user on :src_ip,
+    # :procs_and_triggers => String to append to mysqldump to backup stored procedures and triggers for :src_db,
+    # :extended_insert => String to append to mysqldump to allow for or eliminate multi-row inserts,
+    # :table_name => Table to backup from :src_db, required if this is a per_table
     #               based backup.
-    # :timeStamp => If not nil or false prepend a timestamp to the backup filename,
-    # :textFilter => commandline command to filter/replace text
-    def doBackup(args)
-      req(:required => [:srcDb,
-                        :extendedInsert,
-                        :procsAndTriggers,
+    # :time_stamp => If not nil or false prepend a time_stamp to the backup file_name,
+    # :text_filter => commandline command to filter/replace text
+    def do_backup(args)
+      req(:required => [:src_db,
+                        :extended_insert,
+                        :procs_and_triggers,
                         :user,
-                        :srcIp],
-          :argsObject => args)
+                        :src_ip],
+          :args_object => args)
       args[:task] = :backup
-      if args[:tableName]
-        fileName = "#{args[:srcDb]}-#{args[:tableName]}.sql.gz"
-        backupSrc = "'#{args[:srcDb]}' '#{args[:tableName]}'"
+      if args[:table_name]
+        file_name = "#{args[:src_db]}-#{args[:table_name]}.sql.gz"
+        backupSrc = "'#{args[:src_db]}' '#{args[:table_name]}'"
       else
-        fileName = "#{args[:srcDb]}.sql.gz"
-        backupSrc = "'#{args[:srcDb]}'"
+        file_name = "#{args[:src_db]}.sql.gz"
+        backupSrc = "'#{args[:src_db]}'"
       end
-      if args[:timeStamp]
-        fileName = "#{Time.now.strftime("%Y%m%d-%H%M")}-#{fileName}"
+      if args[:time_stamp]
+        file_name = "#{Time.now.strftime("%Y%m%d-%H%M")}-#{file_name}"
       end
-      `#{coreReqs(:binary => "mysqldump")} --opt -Q #{args[:extendedInsert]} #{args[:procsAndTriggers]} -u #{args[:user]} #{args[:password]} -h #{args[:srcIp]} #{backupSrc} #{args[:textFilter]} | gzip > #{fileName}`
-      updateTaskResults(checkExitCode(args))
-      @taskResults[args[:srcHost]][args[:srcDb]][:backupFiles] << fileName
-      # puts "#{coreReqs(:binary => "mysqldump")} --opt -Q #{args[:extendedInsert]} #{args[:procsAndTriggers]} -u #{args[:user]} #{args[:password]} -h #{args[:srcIp]} #{backupSrc} #{args[:textFilter]} | gzip > #{fileName}"
+      `#{core_reqs(:binary => "mysqldump")} --opt -Q #{args[:extended_insert]} #{args[:procs_and_triggers]} -u #{args[:user]} #{args[:password]} -h #{args[:src_ip]} #{backupSrc} #{args[:text_filter]} | gzip > #{file_name}`
+      updatetask_results(check_exit_code(args))
+      @task_results[args[:src_host]][args[:src_db]][:backup_files] << file_name
     end
     
-    # :destDb => Name of the database we are restoring from the backup, not the
-    #           same as :destDb but can be,
-    # :destHost => Name of the host we are restoring to,
-    # :backupFiles => Array object containing filenames with paths if outside of
+    # :dest_db => Name of the database we are restoring from the backup, not the
+    #           same as :dest_db but can be,
+    # :dest_host => Name of the host we are restoring to,
+    # :backup_files => Array object containing file_names with paths if outside of
     #                 cwd,
-    # :backupFileFormat => The format of the files being passed in.  This is set
+    # :backup_file_format => The format of the files being passed in.  This is set
     #                      in the restoreFromBackup method but can be overwritten
     #                      if you think you know better. USE CAUTION!,
-    # :textFilter => commandline command to filter text
+    # :text_filter => commandline command to filter text
     def doRestore(args)
-      req(:required => [:backupFileFormat,
-                        :backupFiles,
+      req(:required => [:backup_file_format,
+                        :backup_files,
                         :user,
                         :password,
-                        :destIp,
-                        :destDb],
-          :argsObject => args)
+                        :dest_ip,
+                        :dest_db],
+          :args_object => args)
       args[:task] = :restore
       # Determine what tool we need to change the file to text and concatenate it
-      # for a pipe to :textFilter and mysql
-      cat = case args[:backupFileFormat]
-      when :text then coreReqs(:binary => "cat")
-      when :gzip then coreReqs(:binary => "gunzip", :cmdArgs => "-c")
+      # for a pipe to :text_filter and mysql
+      cat = case args[:backup_file_format]
+      when :text then core_reqs(:binary => "cat")
+      when :gzip then core_reqs(:binary => "gunzip", :cmd_args => "-c")
       end
       
       
       # Do the actual restore, this method will be in flux, we need to use the cli
       # but need to do a better job of catching system errors, right now that needs
-      # to be in checkExitCode.
-      args[:backupFiles].each do |backupFile|
-        args[:backupFile] = backupFile
-        `#{cat} #{backupFile} #{args[:textFilter]} | #{coreReqs(:binary => "mysql")} -u #{args[:user]} -p#{args[:password]} -h #{args[:destIp]} #{args[:destDb]}`
-        updateTaskResults(checkExitCode(args))
-        @taskResults[args[:destHost]][args[:destDb]][:restoreFiles] << backupFile
+      # to be in check_exit_code.
+      args[:backup_files].each do |backup_file|
+        args[:backup_file] = backup_file
+        `#{cat} #{backup_file} #{args[:text_filter]} | #{core_reqs(:binary => "mysql")} -u #{args[:user]} -p#{args[:password]} -h #{args[:dest_ip]} #{args[:dest_db]}`
+        updatetask_results(check_exit_code(args))
+        @task_results[args[:dest_host]][args[:dest_db]][:restore_files] << backup_file
       end
     end
   end

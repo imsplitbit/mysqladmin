@@ -7,121 +7,121 @@ module Mysqladmin
     include Mysqladmin::Arguments
     include Mysqladmin::Serialize
     
-    attr_accessor :user, :srcHost, :srcConnection, :destConnection
+    attr_accessor :user, :src_host, :src_connection, :dest_connection
     attr_reader :grants, :revokes
     
     # :user => User we are going to be manipulating,
-    # :srcHost => The host from which :user will be connecting from, think of this
-    #             in terms of the grant statement ... TO ':user'@':srcHost'...,
+    # :src_host => The host from which :user will be connecting from, think of this
+    #             in terms of the grant statement ... TO ':user'@':src_host'...,
     # :password => If a change of password is desired, set this to the desired
     #              password.  This will overwrite the existing password when
-    #              you run Object.setGrants,
-    # :srcConnection => Name of the connection being treated as the source for
+    #              you run Object.set_grants,
+    # :src_connection => Name of the connection being treated as the source for
     #                   getting/setting grants,
-    # :destConnection => Name of the connection being treated as the destination
-    #                    when setting grants/revokes.  Defaults to :srcConnection.
+    # :dest_connection => Name of the connection being treated as the destination
+    #                    when setting grants/revokes.  Defaults to :src_connection.
     #                    This is usually modified if you are migrating user
     #                    accounts from one server to another.
     def initialize(args = {})
       @grants = []
       @revokes = []
-      @dbNames = []
+      @db_name = []
       @user = args[:user] || nil
-      @srcHost = args[:srcHost] || "%"
+      @src_host = args[:src_host] || "%"
       @password = args[:password] || nil
-      @srcConnection = args[:srcConnection] || nil
-      @destConnection = args[:destConnection] || nil
+      @src_connection = args[:src_connection] || nil
+      @dest_connection = args[:dest_connection] || nil
     end
     
-    # :connectionName => Name of the connection to use in the resulting
-    #                    Mysqladmin::Exec object.  Defaults to @srcConnection
+    # :connection_name => Name of the connection to use in the resulting
+    #                    Mysqladmin::Exec object.  Defaults to @src_connection
     #                    if not set.,
-    # :customGrantSQL => If you have a custom sql to show grants or otherwise
+    # :custom_grant_sql => If you have a custom sql to show grants or otherwise
     #                    retrieve useful user info, do it here.  This is an SQL
     #                    injection point so do not expoose this outside of your
     #                    script.
-    def getGrants(args = {})
-      args[:customGrantSQL] = nil unless args.has_key?(:customGrantSQL)
-      args[:connectionName] = @srcConnection unless args.has_key?(:connectionName)
+    def get_grants(args = {})
+      args[:custom_grant_sql] = nil unless args.has_key?(:custom_grant_sql)
+      args[:connection_name] = @src_connection unless args.has_key?(:connection_name)
       
       # Mandatory args
-      req(:required => [:connectionName],
-          :argsObject => args)
+      req(:required => [:connection_name],
+          :args_object => args)
       
       @grants = [] if @grants.length > 0
-      if args[:customGrantSQL].nil?
-        args[:sql] = "SHOW GRANTS FOR '#{@user}'@'#{@srcHost}'"
+      if args[:custom_grant_sql].nil?
+        args[:sql] = "SHOW GRANTS FOR '#{@user}'@'#{@src_host}'"
       else
-        args[:sql] = args[:customGrantSQL]
+        args[:sql] = args[:custom_grant_sql]
       end
       res = Mysqladmin::Exec.new(args)
-      res.go
+      res.query
       res.each_hash do |grant|
-        @grants << grant["Grants for #{@user}@#{srcHost}"]
+        @grants << grant["Grants for #{@user}@#{src_host}"]
       end
-      args.delete(:connectionName)
-      args.delete(:customGrantSQL)
+      args.delete(:connection_name)
+      args.delete(:custom_grant_sql)
       args.delete(:sql)
     end
     
-    # :connectionName => Name of the connection to apply the contents of @grants
-    #                    to.  Defaults to @destConnection if not set.
-    def setGrants(args = {})
-      args[:connectionName] = @destConnection unless args.has_key?(:connectionName)
+    # :connection_name => Name of the connection to apply the contents of @grants
+    #                    to.  Defaults to @dest_connection if not set.
+    def set_grants(args = {})
+      args[:connection_name] = @dest_connection unless args.has_key?(:connection_name)
       
       # Mandatory args:
-      req(:required => [:connectionName],
-          :argsObject => args)
+      req(:required => [:connection_name],
+          :args_object => args)
       
       @grants.each do |grant|
         args[:sql] = grant
         dbh = Mysqladmin::Exec.new(args)
-        dbh.go
+        dbh.query
         args.delete(:sql)
       end
-      args.delete(:connectionName)
+      args.delete(:connection_name)
     end
     
     # :user => Username we are manipulating,
-    # :srcHost => The host from which :user will be connecting from, think of this
-    #             in terms of the grant statement ... TO ':user'@':srcHost'...,
-    # :password => Password to set for ':user'@':srcHost',
-    # :connectionName => Server on which you wish to set args[:user]'s password.
-    def setPassword(args)
+    # :src_host => The host from which :user will be connecting from, think of this
+    #             in terms of the grant statement ... TO ':user'@':src_host'...,
+    # :password => Password to set for ':user'@':src_host',
+    # :connection_name => Server on which you wish to set args[:user]'s password.
+    def set_password(args)
       args[:user] = @user unless args.has_key?(:user)
-      args[:srcHost] = @srcHost unless args.has_key?(:srcHost)
+      args[:src_host] = @src_host unless args.has_key?(:src_host)
       args[:password] = @password unless args.has_key?(:password)
-      args[:connectionName] = @destConnection unless args.has_key?(:connectionName)
+      args[:connection_name] = @dest_connection unless args.has_key?(:connection_name)
       
       # Mandatory args:
       req(:required => [:user,
-                        :srcHost,
+                        :src_host,
                         :password,
-                        :connectionName],
-          :argsObject => args)
+                        :connection_name],
+          :args_object => args)
 
       if args[:password] || @password
         password = args[:password] || @password
-        args[:sql] = "SET PASSWORD FOR '#{args[:user]}'@'#{args[:srcHost]}' = PASSWORD('#{args[:password]}')"
+        args[:sql] = "SET PASSWORD FOR '#{args[:user]}'@'#{args[:src_host]}' = PASSWORD('#{args[:password]}')"
         dbh = Mysqladmin::Exec.new(args)
-        dbh.go
+        dbh.query
         args.delete(:sql)
       end
-      args.delete(:connectionName)
+      args.delete(:connection_name)
     end
     
     # :sql => Grant statement to append to the @grants Array.
     # :privileges => Array of privileges to Grant/Revoke,
-    # :srcHost => host the user will be connecting from,
+    # :src_host => host the user will be connecting from,
     # :user => Username to affect,
     # :password => Password to use,
-    # :dbName => Database name,
-    # :tableName => Table
-    def addItem(args)
+    # :db_name => Database name,
+    # :table_name => Table
+    def add_item(args)
       # Mandatory args:
       req(:required => [:sql,
                         :type],
-          :argsObject => args)
+          :args_object => args)
       case args[:type]
       when :grant then @grants << args[:sql]
       when :revoke then @revokes << args[:sql]
@@ -132,10 +132,10 @@ module Mysqladmin
     
     # No args but I wanted to prevent users from changing @grants from an Array
     # by accident.
-    def flushItem(args)
+    def flush_item(args)
       # Mandatory args:
       req(:required => [:type],
-          :argsObject => args)
+          :args_object => args)
       case args[:type]
       when :grant then @grants = []
       when :revoke then @revokes = []
@@ -152,24 +152,24 @@ module Mysqladmin
     # there will still be a stubbed user that has USAGE privs on the machine.
     #
     # Use Object.deleteUser(args) to remove a user once and for all from
-    # the args[:destConnection] server.
-    def convGrantsToRevokes
+    # the args[:dest_connection] server.
+    def conv_grants_to_revokes
       if @revokes.empty?
         @grants.delete_if{|x| x == nil}.each do |grant|
           user = grant[/'*[\w]+.[\w]'*@'*[\w|\.|\%]+'*/].split("@").first.gsub("'", "")
-          srcHost = grant[/'*[\w]+.[\w]'*@'*[\w|\.|\%]+'*/].split("@").last.gsub("'", "")
-          dbName = grant[/ON\ [\w|\W]+\.[\w|\W]+\ TO/].split[1].split(".").map{|x| x.include?("*") ? x : x.gsub!(/\W/,"")}[0]
-          tableName = grant[/ON\ [\w|\W]+\.[\w|\W]+\ TO/].split[1].split(".").map{|x| x.include?("*") ? x : x.gsub!(/\W/,"")}[1]
+          src_host = grant[/'*[\w]+.[\w]'*@'*[\w|\.|\%]+'*/].split("@").last.gsub("'", "")
+          db_name = grant[/ON\ [\w|\W]+\.[\w|\W]+\ TO/].split[1].split(".").map{|x| x.include?("*") ? x : x.gsub!(/\W/,"")}[0]
+          table_name = grant[/ON\ [\w|\W]+\.[\w|\W]+\ TO/].split[1].split(".").map{|x| x.include?("*") ? x : x.gsub!(/\W/,"")}[1]
           
-          unless dbName == "*"
-            dbName = "`#{dbName}`"
+          unless db_name == "*"
+            db_name = "`#{db_name}`"
           end
           
-          # Collect database names in an Array, @dbNames for later use.
-          @dbNames << dbName
+          # Collect database names in an Array, @db_name for later use.
+          @db_name << db_name
           
-          unless tableName == "*"
-            tableName = "`#{tableName}`"
+          unless table_name == "*"
+            table_name = "`#{table_name}`"
           end
           privileges = []
           if grant[/^GRANT\ .+\ ON/].upcase.include?("ALL PRIVILEGES")
@@ -185,27 +185,27 @@ module Mysqladmin
           else
             privileges = privileges.join(", ")
           end
-          @revokes << "REVOKE #{privileges} ON #{dbName}.#{tableName} FROM '#{user}'@'#{srcHost}'"
+          @revokes << "REVOKE #{privileges} ON #{db_name}.#{table_name} FROM '#{user}'@'#{src_host}'"
         end
       end
     end
     
-    # :connectionName => Server on which you wish to revoke args[:user]'s granted
+    # :connection_name => Server on which you wish to revoke args[:user]'s granted
     #                    privileges.
-    def setRevokes(args = {})
-      args[:connectionName] = @srcConnection unless args.has_key?(:connectionName)
+    def set_revokes(args = {})
+      args[:connection_name] = @src_connection unless args.has_key?(:connection_name)
       
       # Mandatory args
-      req(:required => [:connectionName],
-          :argsObject => args)
+      req(:required => [:connection_name],
+          :args_object => args)
       
       @revokes.each do |revoke|
         args[:sql] = revoke
         dbh = Mysqladmin::Exec.new(args)
-        dbh.go
+        dbh.query
         args.delete(:sql)
       end
-      args.delete(:connectionName)
+      args.delete(:connection_name)
     end
   end
 end

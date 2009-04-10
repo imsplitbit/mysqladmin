@@ -9,30 +9,9 @@ module Mysqladmin
       @sql = args[:sql] || nil
       
       #Mandatory args:
-      req(:required => [:connectionName],
-          :argsObject => args)
-      @dbh = Mysqladmin::Pool.connections[args[:connectionName]][:dbh]
-    end
-    
-    # Kind of a dumb name, Object.go, but hey we just want it to... well... GO
-    #
-    # Obvious to me but if not to you, Object.go means execute @sql on
-    # @connectionName from Mysqladmin::Pool.  No args can be given, if you want to modify
-    # the sql being "GO'd" then use Object.sql="DELETE ALL OF MY STUFF" or
-    # or something equally fun.  Wheeeee!!!!
-    def go(args = {})
-      args[:sql] = @sql unless args.has_key?(:sql)
-      
-      # Mandatory args:
-      req(:required => [:sql],
-          :argsObject => args)
-      
-      @res = @dbh.query(cleanse(args))
-      if @res.class == Mysql::Result
-        return true
-      else
-        return false
-      end
+      req(:required => [:connection_name],
+          :args_object => args)
+      @dbh = Mysqladmin::Pool.connections[args[:connection_name]][:dbh]
     end
     
     def query(args = {})
@@ -40,7 +19,7 @@ module Mysqladmin
       
       # Mandatory args:
       req(:required => [:sql],
-          :argsObject => args)
+          :args_object => args)
       
       @res = @dbh.query(cleanse(args))
       if @res.class == Mysql::Result
@@ -64,7 +43,7 @@ module Mysqladmin
       end
     end
     
-    def rows
+    def num_rows
       @res.num_rows
     end
     
@@ -78,10 +57,6 @@ module Mysqladmin
       @sql
     end
     
-    def createDb(dbName)
-      create_db(:db_name => dbName)
-    end
-    
     def create_db(args)
     	sql = @sql
     	query(:sql => "CREATE DATABASE `#{args[:db_name]}`")
@@ -93,15 +68,15 @@ module Mysqladmin
       @dbh.select_db(args[:dbName])
     end
     
-    def listTables
+    def list_tables
       @dbh.list_tables
     end
     
-    def processList
+    def list_processes
       @res = @dbh.list_processes
     end
     
-    def listDbs
+    def list_dbs
       @dbh.list_dbs
     end
   end
