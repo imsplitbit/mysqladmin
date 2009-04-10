@@ -3,8 +3,8 @@ module Mysqladmin
     include Mysqladmin::Arguments
     
     attr_accessor :sql
-    # :sql => SQL to run on args[:connectionName] from pool object Mysqladmin::Pool,
-    # :connectionName => Name of the connection we are using to execute args[:sql]
+    # :sql => SQL to run on args[:connection_name] from pool object Mysqladmin::Pool,
+    # :connection_name => Name of the connection we are using to execute args[:sql]
     def initialize(args)
       @sql = args[:sql] || nil
       
@@ -65,7 +65,7 @@ module Mysqladmin
     
     # the following are just wrappers for the native mysql client lib functions
     def use(args)
-      @dbh.select_db(args[:dbName])
+      @dbh.select_db(args[:db_name])
     end
     
     def list_tables

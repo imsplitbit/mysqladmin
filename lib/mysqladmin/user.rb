@@ -151,7 +151,7 @@ module Mysqladmin
     # Keep in mind that REVOKE USAGE doesn't actually remove the user entirely
     # there will still be a stubbed user that has USAGE privs on the machine.
     #
-    # Use Object.deleteUser(args) to remove a user once and for all from
+    # Use Object.delete_user(args) to remove a user once and for all from
     # the args[:dest_connection] server.
     def conv_grants_to_revokes
       if @revokes.empty?

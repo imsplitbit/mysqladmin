@@ -86,7 +86,7 @@ module Mysqladmin
       end
       
       # Get server version so as to be able to do server specific commands
-      major_version, minor_version, patch_versions = server_version(:connection_name => args[:src_host])
+      major_version, minor_version, patch_version = server_version(:connection_name => args[:src_host])
       
       # Username and Ip are stored for persistence in the pool hash
       args[:user] = Mysqladmin::Pool.connections[args[:src_host]][:user]
@@ -287,16 +287,16 @@ module Mysqladmin
         args[:text_filter] = "| #{args[:text_filter]}"
       end
       
-      args[:backup_files].each do |buFile|
+      args[:backup_files].each do |backup_file|
         # Make sure the backup files exist in the path or crash
-        unless File.file?(buFile)
-          raise RuntimeError, "Backup file #{buFile} is not in path or cwd"
+        unless File.file?(backup_file)
+          raise RuntimeError, "Backup file #{backup_file} is not in path or cwd"
         end
         # analyze the files and make sure we can figure out how to concatenate
         # them to the mysql command for restoration
-        if buFile[/^.*\.sql$/]
+        if backup_file[/^.*\.sql$/]
           args[:backup_file_format] = :text
-        elsif buFile[/^.*\.[t]*gz$/]
+        elsif backup_file[/^.*\.[t]*gz$/]
           args[:backup_file_format] = :gzip
         else
           raise RuntimeError, "No supported backup_file_format matched"
@@ -315,14 +315,14 @@ module Mysqladmin
           if args[:crash_if_exists] == true
             raise RuntimeError, "Database #{args[:dest_db]} exists on #{args[:dest_host]}"
           elsif args[:overwrite_if_exists] == true
-            doRestore(args)
+            do_restore(args)
           else
             false
           end
         end
       else
-        dbh.createDb(args[:dest_db])
-        doRestore(args)
+        dbh.create_db(args[:dest_db])
+        do_restore(args)
       end
       
       # Flush 
@@ -341,8 +341,8 @@ module Mysqladmin
           :args_object => args)
           
       if @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym].class == Hash
-        @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym].each do |table_name, backupResult|
-          if backupResult == false
+        @task_results[args[:src_host]][args[:src_db]]["#{args[:task].to_s}result_log".to_sym].each do |table_name, backup_result|
+          if backup_result == false
             return false
           end
         end
@@ -435,15 +435,15 @@ module Mysqladmin
       args[:task] = :backup
       if args[:table_name]
         file_name = "#{args[:src_db]}-#{args[:table_name]}.sql.gz"
-        backupSrc = "'#{args[:src_db]}' '#{args[:table_name]}'"
+        backup_src = "'#{args[:src_db]}' '#{args[:table_name]}'"
       else
         file_name = "#{args[:src_db]}.sql.gz"
-        backupSrc = "'#{args[:src_db]}'"
+        backup_src = "'#{args[:src_db]}'"
       end
       if args[:time_stamp]
         file_name = "#{Time.now.strftime("%Y%m%d-%H%M")}-#{file_name}"
       end
-      `#{core_reqs(:binary => "mysqldump")} --opt -Q #{args[:extended_insert]} #{args[:procs_and_triggers]} -u #{args[:user]} #{args[:password]} -h #{args[:src_ip]} #{backupSrc} #{args[:text_filter]} | gzip > #{file_name}`
+      `#{core_reqs(:binary => "mysqldump")} --opt -Q #{args[:extended_insert]} #{args[:procs_and_triggers]} -u #{args[:user]} #{args[:password]} -h #{args[:src_ip]} #{backup_src} #{args[:text_filter]} | gzip > #{file_name}`
       updatetask_results(check_exit_code(args))
       @task_results[args[:src_host]][args[:src_db]][:backup_files] << file_name
     end
@@ -457,7 +457,7 @@ module Mysqladmin
     #                      in the restoreFromBackup method but can be overwritten
     #                      if you think you know better. USE CAUTION!,
     # :text_filter => commandline command to filter text
-    def doRestore(args)
+    def do_restore(args)
       req(:required => [:backup_file_format,
                         :backup_files,
                         :user,

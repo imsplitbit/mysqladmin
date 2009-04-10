@@ -15,8 +15,8 @@ module Mysqladmin
       @general_log = nil
       @relay_logs = {}
       @tables = []
-      @vars = serverVariables(:connection_name => args[:connection_name], :type => "variables")
-      @status = serverVariables(:connection_name => args[:connection_name], :type => "status")
+      @vars = server_variables(:connection_name => args[:connection_name], :type => "variables")
+      @status = server_variables(:connection_name => args[:connection_name], :type => "status")
       parse_my_cnf
     end
     
@@ -38,14 +38,14 @@ module Mysqladmin
               var = line.split("=")[0].gsub("-", "_").strip
               val = line.split("=")[1].strip
               if var[/^log_bin$/i]
-                Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |binLog|
-                  bin_log_name = File.basename(binLog)
+                Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |bin_log|
+                  bin_log_name = File.basename(bin_log)
                   @binary_logs[bin_log_name] = {}
-                  @binary_logs[bin_log_name][:path] = binLog
+                  @binary_logs[bin_log_name][:path] = bin_log
                 end
               elsif var[/^relay_log$/i]
                 Dir.glob("#{val}*").delete_if{|x| x[/index$/]}.each do |relay_log|
-                  relay_logName = File.basename(relay_log)
+                  relay_log_name = File.basename(relay_log)
                   @relay_logs[relay_log] = {}
                   @relay_logs[relay_log][:path] = relay_log
                 end

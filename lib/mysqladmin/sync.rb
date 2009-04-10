@@ -8,17 +8,17 @@ module Mysqladmin
       @replica = args[:replica] || nil
     end
     
-    def syncTable(args={:overwrite_if_exists => true, :crash_if_exists => false, :sync_slave => true})
+    def sync_table(args={:overwrite_if_exists => true, :crash_if_exists => false, :sync_slave => true})
       req(:required => [:db_name, :table_name],
           :args_object => args)
       source = args.has_key?(:source) ? args[:source] : @source
       replica = @replica unless args.has_key?(:replica)
       
-      buJob = Mysqladmin::Backup.new
-      buJob.backupHost(:per_table => true,
+      bu_job = Mysqladmin::Backup.new
+      bu_job.backup_host(:per_table => true,
                        :only_these_tables => [args[:table_name]],
                        :src_host => source)
-      buJob.restoreDbFromBackup(:src_db => args[:db_name],
+      bu_job.restore_db_from_backup(:src_db => args[:db_name],
                                 :src_host => source,
                                 :dest_host => replica,
                                 :overwrite_if_exists => true)

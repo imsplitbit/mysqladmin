@@ -15,7 +15,7 @@ module Mysqladmin
     end
     
     # :id => Custom backup id, defaults to Time.now.strftime("%m%d%H%M")
-    def startBackup(args = {})
+    def start_backup(args = {})
       args[:id] = Time.now.strftime("%m%d%H%M") unless args.has_key?(:id)
       results = `#{core_reqs(:binary => "ndb_mgm")} #{@mgmt_server} -e "START BACKUP #{args[:id]} WAIT COMPLETED"`
       if results.split("\n")[3].split.last == "completed"
