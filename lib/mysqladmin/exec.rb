@@ -58,9 +58,9 @@ module Mysqladmin
     end
     
     def create_db(args)
-    	sql = @sql
+    	sql_new = @sql
     	query(:sql => "CREATE DATABASE `#{args[:db_name]}`")
-    	@sql = sql
+    	@sql = sql_new
     end
     
     # the following are just wrappers for the native mysql client lib functions
