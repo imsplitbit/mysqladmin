@@ -91,7 +91,7 @@ module Mysqladmin
       raise NoMethodError, "Not implemented yet"
     end
     
-    def syncHosts(args={})
+    def sync_hosts(args={})
       raise NoMethodError, "Not implemented yet"
     end
 
