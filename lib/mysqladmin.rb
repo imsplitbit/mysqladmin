@@ -1,5 +1,6 @@
 $:.unshift(File.dirname(__FILE__)) unless $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
+begin require "rubygems"; rescue; end
 require "mysqladmin/backup"
 require "mysqladmin/pool"
 require "mysqladmin/error"
