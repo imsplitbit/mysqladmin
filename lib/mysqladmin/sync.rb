@@ -81,10 +81,6 @@ module Mysqladmin
       #             end
       #           end
       #         end
-      
-      if (table_data[:rows] < 100000) && (table_data[:data_length] < 134217728)
-        sdbh.go(:sql => "SELECT *")
-      end
     end
     
     def sycn_db(args={})
